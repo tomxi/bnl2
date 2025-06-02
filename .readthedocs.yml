@@ -16,7 +16,5 @@ sphinx:
 
 formats: []  # Don't build formats (PDF, EPUB, etc.)
 
-mkdocs: false
-
 conda:
   environment: docs/environment.yml

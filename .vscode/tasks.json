@@ -28,8 +28,7 @@
             "command": "pytest",
             "args": [
                 "--cov=src/bnl",
-                "--cov-report=xml",
-                "--cov-report=term-missing"
+                "--cov-report=xml"
             ],
             "group": "test",
             "presentation": {

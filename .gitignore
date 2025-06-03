@@ -1,12 +1,12 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__
 *.py[cod]
 *$py.class
 
 # Distribution / packaging
 .Python
-*.egg-info/
-*.egg
+**/*.egg-info
+**/*.egg
 
 
 # Unit test / coverage reports
@@ -23,7 +23,7 @@ venv/
 
 # Documentation
 docs/_build/
-docs/api/_generated_*/
+docs/**/_generated_*/
 
 # Local development
 *.log

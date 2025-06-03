@@ -1,18 +1,33 @@
-.. _bnl_core_api:
-
 bnl.core
 ========
 
-The ``bnl.core`` module provides fundamental building blocks.
+The ``bnl.core`` module provides fundamental building blocks for the BNL library.
+
+.. note::
+   The ``Segment`` class is also available directly from the top-level package:
+   
+   .. code-block:: python
+      
+      from bnl import Segment  # Preferred import
 
 .. automodule:: bnl.core
-   :noindex:           // Avoids automodule indexing what autosummary will handle
+   :noindex:  # Avoids duplicate entries in search
+   :members:  # Show module-level docstring
 
 .. rubric:: Classes
 
 .. autosummary::
-   :toctree: _generated_core  // Generates detail pages in docs/api/_generated_core/
+   :toctree: _generated_core
    :nosignatures:
-   :template: class.rst      // Uses a class-specific template for generation
+   :template: class.rst
 
-   Segment                   // Lists bnl.core.Segment for the summary table
+   Segment
+
+.. note::
+   For most use cases, you can use the top-level import:
+   
+   .. code-block:: python
+      
+      from bnl import Segment  # Recommended
+      
+   The direct import from ``bnl.core`` is also available if needed.

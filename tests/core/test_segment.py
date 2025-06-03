@@ -1,6 +1,6 @@
 """Tests for the Segment class."""
 import pytest
-from bnl.core.segment import Segment
+from bnl.core import Segment
 
 
 def test_segment_creation():

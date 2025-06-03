@@ -15,7 +15,7 @@ pip install -r docs/requirements.txt
 ## Step 3: Install your project in editable mode
 ```bash
 pip install -e .
-```
+``
 
 ## Step 4: Build the documentation
 ```bash

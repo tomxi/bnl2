@@ -1,7 +1,7 @@
 .. BNL documentation master file
 
-Welcome to BNL's documentation!
-===============================
+Welcome to Boundaries and Labels' documentation!
+================================================
 
 .. toctree::
    :maxdepth: 2
@@ -15,13 +15,7 @@ Welcome to BNL's documentation!
    :maxdepth: 2
    :caption: API Reference
 
-   api
-
-.. toctree::
-   :caption: Development
-
-   contributing
-   changelog
+   api/index
 
 Indices and tables
 ==================

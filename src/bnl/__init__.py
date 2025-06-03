@@ -3,7 +3,7 @@
 This library provides tools for working with hierarchical text segments.
 
 Submodules
----------
+----------
 core
     Core data structures and functionality.
 """

@@ -35,6 +35,7 @@ def test_segment_properties():
     assert "Segment(2 segments)" in str(seg)
     assert "0: [0.50-1.50s] A" in str(seg)
     assert "1: [1.50-3.00s] B" in str(seg)
+    assert repr(seg) == "Segment(2 segments, total_duration=2.50s)"
 
 
 def test_from_mir_eval():
@@ -69,6 +70,8 @@ def test_edge_cases():
     assert seg.duration == 0.0
     assert seg.num_segments == 0
     assert seg.itvls.size == 0
+    assert str(seg) == "Segment(0 segments): []"
+    assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
     
     # Single boundary (no intervals)
     seg = Segment(beta=[1.0])
@@ -76,6 +79,7 @@ def test_edge_cases():
     assert seg.labels == []
     assert seg.duration == 0.0
     assert seg.num_segments == 0
+    assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
     
     # Mismatched labels length
     with pytest.raises(ValueError, match=r"Number of labels \(2\) must be one less than number of unique boundaries \(4\)"):

@@ -3,10 +3,9 @@
 Welcome to Boundaries and Labels' documentation!
 ================================================
 
-This section provides a detailed reference for the ``bnl`` library API.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: API Reference:
 
-   api/core
+   api/bnl

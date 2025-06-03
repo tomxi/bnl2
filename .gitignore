@@ -60,9 +60,8 @@ ENV/
 *.swo
 
 # Documentation
+docs/api/_generated_*/
 docs/_build/
-docs/api/
-docs/generated/
 
 # Local development
 *.log

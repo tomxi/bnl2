@@ -13,6 +13,7 @@ from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
     from .core import Segment
 
+
 def label_style_dict(labels, boundary_color="white", **kwargs):
     """
     Creates a mapping of labels to matplotlib style properties.
@@ -29,7 +30,7 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
     Returns
     -------
     dict
-        {label: {style_property: value}} mapping with keys like 'facecolor', 
+        {label: {style_property: value}} mapping with keys like 'facecolor',
         'edgecolor', 'linewidth', 'hatch', and 'label'.
     """
     # Find unique elements in labels. Labels can be list of arrays, list of labels, or a single array
@@ -119,12 +120,12 @@ def _plot_intervals_and_labels(
 
 
 def plot_segment(
-    seg: 'Segment',
+    seg: "Segment",
     ax: Optional[plt.Axes] = None,
     text: bool = False,
     ytick: str = "",
     time_ticks: bool = True,
-    style_map: Optional[Dict[str, Dict[str, Any]]] = None
+    style_map: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Plot a Segment object.
 
@@ -152,7 +153,7 @@ def plot_segment(
         The axes object with the plot.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10, 1.2)) # Adjusted height
+        fig, ax = plt.subplots(figsize=(10, 1.2))  # Adjusted height
     else:
         fig = ax.figure
 
@@ -160,24 +161,36 @@ def plot_segment(
     if seg.num_segments == 0:
         start_time = seg.beta[0] if len(seg.beta) > 0 else 0.0
         # If single boundary, give it some extent for visualization
-        end_time = seg.beta[-1] if len(seg.beta) > 1 else start_time + 1.0 
-        if start_time == end_time : end_time = start_time + 1.0 # Ensure some span
+        end_time = seg.beta[-1] if len(seg.beta) > 1 else start_time + 1.0
+        if start_time == end_time:
+            end_time = start_time + 1.0  # Ensure some span
         ax.set_xlim(start_time, end_time)
-        ax.text(0.5, 0.5, "Empty Segment", ha='center', va='center', transform=ax.transAxes, fontsize=10, color='gray')
+        ax.text(
+            0.5,
+            0.5,
+            "Empty Segment",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+            fontsize=10,
+            color="gray",
+        )
     else:
         ax.set_xlim(seg.beta[0], seg.beta[-1])
-        _plot_intervals_and_labels(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
+        _plot_intervals_and_labels(
+            seg.itvls, seg.labels, ax, text=text, style_map=style_map
+        )
 
     # Common Axes styling
     ax.set_ylim(0, 1)
     if ytick:
         ax.set_ylabel(ytick, fontsize=10)
     ax.yaxis.set_major_locator(ticker.NullLocator())
-    ax.spines['left'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
     # Keep bottom spine for x-axis context if time_ticks is True
-    ax.spines['bottom'].set_visible(time_ticks)
+    ax.spines["bottom"].set_visible(time_ticks)
 
     if time_ticks:
 
@@ -194,9 +207,11 @@ def plot_segment(
         ax.set_yticks([0.5])
         ax.set_yticklabels([ytick])
 
-    if fig: # fig might not be defined if ax was passed in and is part of a larger figure setup
+    if (
+        fig
+    ):  # fig might not be defined if ax was passed in and is part of a larger figure setup
         try:
             fig.tight_layout()
-        except AttributeError: # E.g. if ax.figure is None or not a Figure object
-            pass 
+        except AttributeError:  # E.g. if ax.figure is None or not a Figure object
+            pass
     return fig, ax

@@ -1,4 +1,5 @@
 """Core data structures for text segmentation."""
+
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 import numpy as np
@@ -8,7 +9,7 @@ from mir_eval.util import boundaries_to_intervals
 @dataclass
 class Segment:
     """Labeled time intervals represented using boundaries (beta).
-    
+
     Parameters
     ----------
     beta : list of float
@@ -16,26 +17,27 @@ class Segment:
     labels : list of str, optional
         Labels for each interval between boundaries.
         Length must be exactly one less than the number of boundaries.
-    
+
     Examples
     --------
     >>> seg = Segment(beta=[0.0, 1.0, 2.0], labels=['A', 'B'])
     >>> seg.duration
     2.0
     """
+
     beta: List[float]
     labels: Optional[List[str]] = None
-   
+
     def __post_init__(self):
         # """Validate inputs and generate labels if needed."""
         # Ensure beta is sorted and deduplicated
         self.beta = sorted(set(self.beta))
-        
+
         # Handle empty boundaries
         if not self.beta:
             self.labels = []
             return
-            
+
         # Generate labels if not provided
         if self.labels is None:
             # Generate labels from start times with 3 decimal places
@@ -45,11 +47,11 @@ class Segment:
                 f"Number of labels ({len(self.labels)}) must be one less than "
                 f"number of unique boundaries ({len(self.beta)})"
             )
-    
+
     @property
     def itvls(self) -> np.ndarray:
         """Get intervals as (start, end) pairs.
-        
+
         Returns
         -------
         np.ndarray
@@ -62,7 +64,7 @@ class Segment:
     @property
     def duration(self) -> float:
         """Get total duration of the segment.
-        
+
         Returns
         -------
         float
@@ -75,7 +77,7 @@ class Segment:
     @property
     def num_segments(self) -> int:
         """Get number of segments (intervals with labels).
-        
+
         Returns
         -------
         int
@@ -84,9 +86,9 @@ class Segment:
         return max(0, len(self.beta) - 1)
 
     @classmethod
-    def from_mir_eval(cls, intervals: np.ndarray, labels: List[str]) -> 'Segment':
+    def from_mir_eval(cls, intervals: np.ndarray, labels: List[str]) -> "Segment":
         """Create a Segment from mir_eval format.
-        
+
         Parameters
         ----------
         intervals : np.ndarray [shape=(n, 2)]
@@ -96,36 +98,43 @@ class Segment:
         labels : list of str [length=n]
             Label for each interval in `intervals`.
             Length must match the number of intervals.
-            
+
         Returns
         -------
         Segment
             A new Segment instance with boundaries derived from the interval endpoints.
-            
+
         Raises
         ------
         ValueError
             If any interval has a start time greater than its end time.
             If the number of labels doesn't match the number of intervals.
-            
+
         """
         # Extract unique boundaries and sort them
         boundaries = sorted(set(intervals.flatten()))
         return cls(beta=boundaries, labels=labels)
-    
+
     def __repr__(self) -> str:
         return f"Segment({self.num_segments} segments, total_duration={self.duration:.2f}s)"
-    
+
     def __str__(self) -> str:
         if not self.beta:
             return "Segment(0 segments): []"
-            
+
         segments = []
         for i, ((start, end), label) in enumerate(zip(self.itvls, self.labels)):
             segments.append(f"  {i}: [{start:.2f}-{end:.2f}s] {label}")
         return "\n".join([f"Segment({self.num_segments} segments):"] + segments)
 
-    def plot(self, ax=None, text: bool = False, ytick: str = "", time_ticks: bool = True, style_map: Optional[Dict[str, Any]] = None):
+    def plot(
+        self,
+        ax=None,
+        text: bool = False,
+        ytick: str = "",
+        time_ticks: bool = True,
+        style_map: Optional[Dict[str, Any]] = None,
+    ):
         """Plot the segment boundaries and labels.
 
         This is a convenience wrapper around `bnl.viz.plot_segment`.
@@ -157,7 +166,7 @@ class Segment:
         bnl.viz.label_style_dict : Function to generate style maps.
 
         """
-        from .viz import plot_segment # matplotlib is now a mandatory dependency
+        from .viz import plot_segment  # matplotlib is now a mandatory dependency
 
         return plot_segment(
             self,
@@ -165,5 +174,5 @@ class Segment:
             text=text,
             ytick=ytick,
             time_ticks=time_ticks,
-            style_map=style_map
+            style_map=style_map,
         )

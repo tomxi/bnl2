@@ -10,7 +10,7 @@ viz
     Visualization utilities for segmentations.
 """
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"
 
 from .core import Segment
 from . import viz
@@ -19,8 +19,8 @@ from . import viz
 from .viz import plot_segment, label_style_dict
 
 __all__ = [
-    'Segment',
-    'viz',
-    'plot_segment',
-    'label_style_dict',
+    "Segment",
+    "viz",
+    "plot_segment",
+    "label_style_dict",
 ]

@@ -1,4 +1,5 @@
 """Tests for the Segment class."""
+
 import numpy as np
 import pytest
 from bnl.core import Segment
@@ -12,7 +13,7 @@ def test_basic_segment_creation():
     assert seg.labels == ["A", "B", "C"]
     assert seg.duration == 4.0
     assert seg.num_segments == 3
-    
+
     # Test automatic label generation
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0])
     assert seg.labels == ["0.000", "1.000", "2.500"]
@@ -21,16 +22,16 @@ def test_basic_segment_creation():
 def test_segment_properties():
     """Test Segment properties and methods."""
     seg = Segment(beta=[0.5, 1.5, 3.0], labels=["A", "B"])
-    
+
     # Test duration
     assert seg.duration == 2.5
-    
+
     # Test intervals
     intervals = seg.itvls
     assert isinstance(intervals, np.ndarray)
     assert intervals.shape == (2, 2)
     np.testing.assert_array_almost_equal(intervals, np.array([[0.5, 1.5], [1.5, 3.0]]))
-    
+
     # Test string representation
     assert "Segment(2 segments)" in str(seg)
     assert "0: [0.50-1.50s] A" in str(seg)
@@ -43,17 +44,17 @@ def test_from_mir_eval():
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
     labels = ["A", "B", "C"]
     seg = Segment.from_mir_eval(intervals, labels)
-    
+
     assert seg.beta == [0.0, 1.0, 2.5, 3.0]
     assert seg.labels == ["A", "B", "C"]
     assert seg.num_segments == 3
     assert seg.duration == 3.0
-    
+
     # Test with unsorted intervals
     intervals = np.array([[1.0, 2.5], [0.0, 1.0], [2.5, 3.0]])
     seg = Segment.from_mir_eval(intervals, labels)
     assert seg.beta == [0.0, 1.0, 2.5, 3.0]
-    
+
     # Test with overlapping intervals (should deduplicate boundaries)
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0], [2.0, 2.5]])
     seg = Segment.from_mir_eval(intervals, ["A", "B", "C", "D"])
@@ -72,7 +73,7 @@ def test_edge_cases():
     assert seg.itvls.size == 0
     assert str(seg) == "Segment(0 segments): []"
     assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
-    
+
     # Single boundary (no intervals)
     seg = Segment(beta=[1.0])
     assert seg.beta == [1.0]
@@ -80,8 +81,10 @@ def test_edge_cases():
     assert seg.duration == 0.0
     assert seg.num_segments == 0
     assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
-    
+
     # Mismatched labels length
-    with pytest.raises(ValueError, match=r"Number of labels \(2\) must be one less than number of unique boundaries \(4\)"):
+    with pytest.raises(
+        ValueError,
+        match=r"Number of labels \(2\) must be one less than number of unique boundaries \(4\)",
+    ):
         Segment(beta=[0.0, 1.0, 2.0, 3.0], labels=["A", "B"])
-    

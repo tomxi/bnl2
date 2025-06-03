@@ -1,8 +1,0 @@
-# Core documentation dependencies
-sphinx>=4.0
-sphinx-rtd-theme>=0.5.0
-numpydoc>=1.0
-sphinx-copybutton>=0.3.0
-myst-parser>=0.18.0
-
-# Note: Additional development dependencies are specified in pyproject.toml

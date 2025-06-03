@@ -1,15 +1,18 @@
 {
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
+    "files.associations": {
+        "*.rst": "restructuredtext"
+    },
+    "autoDocstring.docstringFormat": "numpy",
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "docs/_build": true,
+        "*.egg-info": true
+    },
     "python.testing.pytestArgs": [
-        ".", 
-        "--cov=src/bnl", 
-        "--cov-report=xml"
+        "tests"
     ],
-    "python.testing.cwd": "${workspaceFolder}",
-    "coverage-gutters.coverageFileNames": ["coverage.xml"],
-    "coverage-gutters.showLineCoverage": true,
-    "coverage-gutters.showRulerCoverage": true,
-    "coverage-gutters.showGutterCoverage": true
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

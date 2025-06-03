@@ -1,4 +1,0 @@
-Examples
-========
-
-.. todo:: Provide examples.

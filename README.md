@@ -1,35 +1,41 @@
-# BNL (Boundaries and Labels)
+# BNL: Boundaries and Labels
 
 A Python library for hierarchical text segmentation and evaluation.
-Rewritten with LLMs.
 
 ## Quick Start
 
 ```python
-from bnl import Segment
+import numpy as np
+from bnl import Segment, plot_segment
+
+# Create a segment
+boundaries = np.array([0.0, 2.5, 5.0, 7.5, 10.0])
+labels = ['A', 'B', 'A', 'C']
+seg = Segment(boundaries, labels)
+
+# Visualize
+fig, ax = plot_segment(seg, text=True)
 ```
 
-## Documentation
+## Installation
 
-The full documentation is available at [bnl.readthedocs.io](https://bnl.readthedocs.io)
+```bash
+git clone https://github.com/tomxi/bnl.git
+cd bnl
+pip install -e ".[dev,docs]"
+```
+
+## Development
+
+- **Serve Docs**: `Cmd+Shift+P` → `Tasks: Run Task` → `Serve Docs`
+- **Format**: Auto-formatting enabled on save
+
+## Features
+
+- **Core**: Hierarchical text segmentation with `Segment` class
+- **Visualization**: Rich plotting with customizable styling  
+- **Integration**: Compatible with mir_eval and MIR tools
 
 ## License
+
 MIT
-
-## Manual Documentation Build Instructions
-
-Since you have a conda environment set up, here are the manual steps to build the documentation:
-
-### Step 1: Build the documentation
-```bash
-pip install -r docs/requirements.txt
-pip install -e .
-cd docs
-make clean
-make html
-```
-
-### Step 2: View the documentation
-```bash
-open _build/html/index.html
-```

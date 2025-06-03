@@ -1,16 +1,8 @@
-bnl
-===
+API Reference
+=============
 
-.. automodule:: bnl
-   :members:
-   :imported-members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 2
 
-   .. rubric:: Classes
-
-   .. autosummary::
-      :toctree: _generated_bnl
-      :nosignatures:
-      :template: class.rst
-
+   core
+   viz 

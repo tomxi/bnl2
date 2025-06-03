@@ -1,11 +1,22 @@
 .. BNL documentation master file
 
-Welcome to Boundaries and Labels' documentation!
-================================================
+BNL: Boundaries and Labels
+===========================
 
+A Python library for hierarchical text segmentation and evaluation.
 
 .. toctree::
-   :maxdepth: 3
-   :caption: API Reference:
+   :maxdepth: 2
+   :caption: Documentation:
 
+   quickstart
    api/bnl
+   examples
+   development
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

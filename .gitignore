@@ -19,6 +19,7 @@ coverage.xml
 
 # IDE
 # .vscode/
+venv/
 
 # Documentation
 docs/_build/

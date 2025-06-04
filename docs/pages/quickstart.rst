@@ -6,8 +6,8 @@ Installation
 
 .. code-block:: bash
 
-    git clone https://github.com/tomxi/bnl.git
-    cd bnl
+    git clone https://github.com/tomxi/bnl2.git
+    cd bnl2
     pip install -e ".[dev,docs]"
     Here's some more text
 

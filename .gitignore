@@ -22,7 +22,7 @@ coverage.xml
 venv/
 
 # Documentation
-docs/_build/
+docs/_*/
 docs/**/_generated_*/
 
 # Local development

@@ -12,7 +12,12 @@ A Python library for hierarchical text segmentation and evaluation.
    :maxdepth: 2
    :caption: Documentation:
 
-   quickstart
+   pages/quickstart
    api/bnl
-   examples
-   modules
+   pages/examples
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Quick Links:
+
+   pages/modules

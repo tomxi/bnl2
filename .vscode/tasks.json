@@ -40,10 +40,15 @@
         {
             "label": "Test with Coverage",
             "type": "shell",
-            "command": "pytest",
+            "command": "conda",
             "args": [
+                "run",
+                "-n",
+                "py311",
+                "pytest",
                 "--cov=src/bnl",
-                "--cov-report=xml"
+                "--cov-report=xml",
+                "tests/"
             ],
             "group": "test",
             "presentation": {

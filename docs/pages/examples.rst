@@ -14,12 +14,6 @@ Music Structure Analysis
     labels = ['intro', 'verse', 'chorus', 'verse', 'outro']
     song = Segment(boundaries, labels)
 
-    # Analyze structure
-    print(f"Song duration: {song.duration:.1f} seconds")
-    for i, (start, end) in enumerate(song.itvls):
-        duration = end - start
-        label = song.labels[i]
-        print(f"  {label:>8}: {start:5.1f}s - {end:5.1f}s ({duration:4.1f}s)")
 
 Visualization
 -------------

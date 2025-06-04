@@ -9,6 +9,7 @@ dependencies:
   - mir_eval>=0.7
   - matplotlib>=3.3
   - librosa>=0.8.0
+  - pyarrow>=14.0
   # Docs dependencies from pyproject.toml
   - sphinx>=4.0
   - sphinx-rtd-theme>=0.5.0
@@ -16,4 +17,7 @@ dependencies:
   - sphinx-copybutton>=0.3.0
   - myst-parser>=0.18.0
   - sphinx-autobuild>=2021.3.14
+  # Dev dependencies
+  - pytest>=7.0.0
+  - pytest-cov>=4.0.0
   - pip # Needed for pip install commands later 

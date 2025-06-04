@@ -18,8 +18,8 @@ Basic Usage
     import numpy as np
     from bnl import Segment, plot_segment
 
-    # Create boundaries and labels
-    boundaries = np.array([0.0, 2.5, 5.0, 7.5, 10.0])
+    # Create boundaries and labels - boundaries as a set
+    boundaries = {0.0, 2.5, 5.0, 7.5, 10.0}
     labels = ['A', 'B', 'A', 'C']
     seg = Segment(boundaries, labels)
 

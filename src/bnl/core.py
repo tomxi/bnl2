@@ -1,7 +1,7 @@
 """Core data structures for text segmentation."""
 
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Set
 import numpy as np
 from mir_eval.util import boundaries_to_intervals
 
@@ -12,26 +12,27 @@ class Segment:
 
     Parameters
     ----------
-    beta : list of float
-        List of boundary times in seconds.
+    beta : set of float
+        Set of boundary times in seconds.
     labels : list of str, optional
         Labels for each interval between boundaries.
         Length must be exactly one less than the number of boundaries.
 
     Examples
     --------
-    >>> seg = Segment(beta=[0.0, 1.0, 2.0], labels=['A', 'B'])
+    >>> seg = Segment(beta={0.0, 1.0, 2.0}, labels=['A', 'B'])
     >>> seg.duration
     2.0
     """
 
-    beta: List[float]
+    beta: Set[float]
     labels: Optional[List[str]] = None
 
     def __post_init__(self):
-        # """Validate inputs and generate labels if needed."""
-        # Ensure beta is sorted and deduplicated
-        self.beta = sorted(set(self.beta))
+        """Validate inputs and generate labels if needed."""
+        # Ensure beta is a set (convert from list if needed)
+        if not isinstance(self.beta, set):
+            self.beta = set(self.beta)
 
         # Handle empty boundaries
         if not self.beta:
@@ -41,12 +42,24 @@ class Segment:
         # Generate labels if not provided
         if self.labels is None:
             # Generate labels from start times with 3 decimal places
-            self.labels = [f"{start:.3f}" for start in self.beta[:-1]]
+            sorted_beta = self._sorted_boundaries
+            self.labels = [f"{start:.3f}" for start in sorted_beta[:-1]]
         elif len(self.labels) != len(self.beta) - 1:
             raise ValueError(
                 f"Number of labels ({len(self.labels)}) must be one less than "
                 f"number of unique boundaries ({len(self.beta)})"
             )
+
+    @property
+    def _sorted_boundaries(self) -> List[float]:
+        """Get boundaries sorted in ascending order.
+        
+        Returns
+        -------
+        list of float
+            Sorted list of boundary times.
+        """
+        return sorted(self.beta)
 
     @property
     def itvls(self) -> np.ndarray:
@@ -59,7 +72,7 @@ class Segment:
         """
         if not self.beta:
             return np.array([])
-        return boundaries_to_intervals(np.array(self.beta))
+        return boundaries_to_intervals(np.array(self._sorted_boundaries))
 
     @property
     def duration(self) -> float:
@@ -72,7 +85,8 @@ class Segment:
         """
         if len(self.beta) < 2:
             return 0.0
-        return self.beta[-1] - self.beta[0]
+        sorted_beta = self._sorted_boundaries
+        return sorted_beta[-1] - sorted_beta[0]
 
     @property
     def num_segments(self) -> int:
@@ -111,8 +125,8 @@ class Segment:
             If the number of labels doesn't match the number of intervals.
 
         """
-        # Extract unique boundaries and sort them
-        boundaries = sorted(set(intervals.flatten()))
+        # Extract unique boundaries as a set
+        boundaries = set(intervals.flatten())
         return cls(beta=boundaries, labels=labels)
 
     def __repr__(self) -> str:

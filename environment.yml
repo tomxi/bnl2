@@ -17,6 +17,9 @@ dependencies:
   - sphinx-copybutton>=0.3.0
   - myst-parser>=0.18.0
   - sphinx-autobuild>=2021.3.14
+  # Notebook dependencies
+  - jupyter
+  - ipykernel
   # Dev dependencies
   - pytest>=7.0.0
   - pytest-cov>=4.0.0

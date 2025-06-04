@@ -78,7 +78,7 @@ def _plot_intervals_and_labels(
     intervals: np.ndarray,
     labels: List[str],
     ax: plt.Axes,
-    text: bool = False,
+    text: bool = True,
     style_map: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> None:
     """Internal helper to plot intervals and labels on a given Axes.
@@ -91,7 +91,7 @@ def _plot_intervals_and_labels(
         Segment labels, must be same length as number of intervals.
     ax : matplotlib.axes.Axes
         Axes object to plot on.
-    text : bool, default=False
+    text : bool, default=True
         Whether to display segment labels as text on the plot.
     style_map : dict, optional
         A precomputed mapping from labels to style properties.
@@ -153,65 +153,45 @@ def plot_segment(
         The axes object with the plot.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10, 1.2))  # Adjusted height
+        fig, ax = plt.subplots(figsize=(6, 0.6))  # short and wide
     else:
         fig = ax.figure
 
-    # Determine plot limits before plotting segments
-    if seg.num_segments == 0:
-        start_time = seg.beta[0] if len(seg.beta) > 0 else 0.0
-        # If single boundary, give it some extent for visualization
-        end_time = seg.beta[-1] if len(seg.beta) > 1 else start_time + 1.0
-        if start_time == end_time:
-            end_time = start_time + 1.0  # Ensure some span
-        ax.set_xlim(start_time, end_time)
-        ax.text(
-            0.5,
-            0.5,
-            "Empty Segment",
-            ha="center",
-            va="center",
-            transform=ax.transAxes,
-            fontsize=10,
-            color="gray",
-        )
-    else:
-        ax.set_xlim(seg.beta[0], seg.beta[-1])
+    # Set plot limits and content
+    sorted_beta = seg._sorted_boundaries
+    
+    if seg.num_segments != 0:
+        ax.set_xlim(sorted_beta[0], sorted_beta[-1])
         _plot_intervals_and_labels(
             seg.itvls, seg.labels, ax, text=text, style_map=style_map
         )
+    else:
+        # Handle empty segments
+        start_time = sorted_beta[0] if sorted_beta else 0.0
+        end_time = sorted_beta[-1] if len(sorted_beta) > 1 else start_time + 1.0
+        if start_time == end_time:
+            end_time = start_time + 1.0
+        ax.set_xlim(start_time, end_time)
+        ax.text(
+            0.5, 0.5, "Empty Segment",
+            ha="center", va="center", transform=ax.transAxes,
+            fontsize=10, color="gray"
+        )       
 
-    # Common Axes styling
+    # Apply common styling
     ax.set_ylim(0, 1)
-    if ytick:
-        ax.set_ylabel(ytick, fontsize=10)
-    ax.yaxis.set_major_locator(ticker.NullLocator())
-    ax.spines["left"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
-    # Keep bottom spine for x-axis context if time_ticks is True
-    ax.spines["bottom"].set_visible(time_ticks)
 
     if time_ticks:
-
-        # Use the default automatic tick locator
         ax.xaxis.set_major_locator(ticker.AutoLocator())
         ax.xaxis.set_major_formatter(TimeFormatter())
         ax.set_xlabel("Time (s)")
     else:
         ax.set_xticks([])
 
-    if ytick == "":
-        ax.set_yticks([])
-    else:
+    if ytick:
         ax.set_yticks([0.5])
         ax.set_yticklabels([ytick])
+    else:
+        ax.set_yticks([])
 
-    if (
-        fig
-    ):  # fig might not be defined if ax was passed in and is part of a larger figure setup
-        try:
-            fig.tight_layout()
-        except AttributeError:  # E.g. if ax.figure is None or not a Figure object
-            pass
     return fig, ax

@@ -9,7 +9,7 @@ import numpy as np
 from bnl import Segment, plot_segment
 
 # Create a segment
-boundaries = np.array([0.0, 2.5, 5.0, 7.5, 10.0])
+boundaries = {0.0, 2.5, 5.0, 7.5, 10.0}  # Set of boundary times
 labels = ['A', 'B', 'A', 'C']
 seg = Segment(boundaries, labels)
 

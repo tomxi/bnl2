@@ -9,7 +9,7 @@ def test_basic_segment_creation():
     """Test basic Segment creation with boundaries and labels."""
     # Test with explicit labels
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0], labels=["A", "B", "C"])
-    assert seg.beta == [0.0, 1.0, 2.5, 4.0]
+    assert seg.beta == {0.0, 1.0, 2.5, 4.0}
     assert seg.labels == ["A", "B", "C"]
     assert seg.duration == 4.0
     assert seg.num_segments == 3
@@ -45,7 +45,7 @@ def test_from_mir_eval():
     labels = ["A", "B", "C"]
     seg = Segment.from_mir_eval(intervals, labels)
 
-    assert seg.beta == [0.0, 1.0, 2.5, 3.0]
+    assert seg.beta == {0.0, 1.0, 2.5, 3.0}
     assert seg.labels == ["A", "B", "C"]
     assert seg.num_segments == 3
     assert seg.duration == 3.0
@@ -53,12 +53,12 @@ def test_from_mir_eval():
     # Test with unsorted intervals
     intervals = np.array([[1.0, 2.5], [0.0, 1.0], [2.5, 3.0]])
     seg = Segment.from_mir_eval(intervals, labels)
-    assert seg.beta == [0.0, 1.0, 2.5, 3.0]
+    assert seg.beta == {0.0, 1.0, 2.5, 3.0}
 
     # Test with overlapping intervals (should deduplicate boundaries)
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0], [2.0, 2.5]])
     seg = Segment.from_mir_eval(intervals, ["A", "B", "C", "D"])
-    assert seg.beta == [0.0, 1.0, 2.0, 2.5, 3.0]
+    assert seg.beta == {0.0, 1.0, 2.0, 2.5, 3.0}
     assert len(seg.labels) == 4  # Number of intervals
 
 
@@ -66,7 +66,7 @@ def test_edge_cases():
     """Test edge cases and error conditions."""
     # Empty segment
     seg = Segment(beta=[])
-    assert seg.beta == []
+    assert seg.beta == set()
     assert seg.labels == []
     assert seg.duration == 0.0
     assert seg.num_segments == 0
@@ -76,7 +76,7 @@ def test_edge_cases():
 
     # Single boundary (no intervals)
     seg = Segment(beta=[1.0])
-    assert seg.beta == [1.0]
+    assert seg.beta == {1.0}
     assert seg.labels == []
     assert seg.duration == 0.0
     assert seg.num_segments == 0
@@ -88,3 +88,19 @@ def test_edge_cases():
         match=r"Number of labels \(2\) must be one less than number of unique boundaries \(4\)",
     ):
         Segment(beta=[0.0, 1.0, 2.0, 3.0], labels=["A", "B"])
+
+
+def test_beta_input_gardening():
+    """Test that beta is properly converted to a set."""
+    # Test with list input
+    seg = Segment(beta=[1.0, 2.0, 1.0, 3.0])  # duplicates should be removed
+    assert seg.beta == {1.0, 2.0, 3.0}
+    assert len(seg.beta) == 3
+    
+    # Test with set input
+    seg = Segment(beta={1.0, 2.0, 3.0})
+    assert seg.beta == {1.0, 2.0, 3.0}
+    
+    # Test with tuple input
+    seg = Segment(beta=(1.0, 2.0, 3.0))
+    assert seg.beta == {1.0, 2.0, 3.0}

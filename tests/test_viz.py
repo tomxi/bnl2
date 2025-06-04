@@ -79,7 +79,6 @@ class TestSegmentPlotting:
         # expect warning
         assert fig is not None
 
-
     def test_existing_axes(self):
         """Test plotting on existing axes."""
         seg = Segment(beta=[0, 1], labels=["A"])

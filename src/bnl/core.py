@@ -49,6 +49,21 @@ class Segment:
                 f"Number of labels ({len(self.labels)}) must be one less than "
                 f"number of unique boundaries ({len(self.beta)})"
             )
+        
+    def __repr__(self) -> str:
+        n_segments = max(0, len(self.beta) - 1)
+        duration = self.boundaries[-1] - self.boundaries[0] if len(self.boundaries) > 1 else 0.0
+        return f"Segment({n_segments} segments, total_duration={duration:.2f}s)"
+
+    def __str__(self) -> str:
+        n_segments = max(0, len(self.beta) - 1)
+        if n_segments == 0:
+            return "Segment(0 segments): []"
+
+        segments = []
+        for i, ((start, end), label) in enumerate(zip(self.itvls, self.labels)):
+            segments.append(f"  {i}: [{start:.2f}-{end:.2f}s] {label}")
+        return "\n".join([f"Segment({n_segments} segments):"] + segments)
 
     @property
     def boundaries(self) -> List[float]:
@@ -73,31 +88,6 @@ class Segment:
         if not self.beta:
             return np.array([])
         return boundaries_to_intervals(np.array(self.boundaries))
-
-    @property
-    def duration(self) -> float:
-        """Get total duration of the segment.
-
-        Returns
-        -------
-        float
-            Duration in seconds (last boundary minus first). Returns 0.0 if fewer than 2 boundaries.
-        """
-        if len(self.beta) < 2:
-            return 0.0
-        sorted_beta = self.boundaries
-        return sorted_beta[-1] - sorted_beta[0]
-
-    @property
-    def num_segments(self) -> int:
-        """Get number of segments (intervals with labels).
-
-        Returns
-        -------
-        int
-            Number of segments, which is one less than number of boundaries.
-        """
-        return max(0, len(self.beta) - 1)
 
     @classmethod
     def from_mir_eval(cls, intervals: np.ndarray, labels: List[str]) -> "Segment":
@@ -129,17 +119,7 @@ class Segment:
         boundaries = set(intervals.flatten())
         return cls(beta=boundaries, labels=labels)
 
-    def __repr__(self) -> str:
-        return f"Segment({self.num_segments} segments, total_duration={self.duration:.2f}s)"
 
-    def __str__(self) -> str:
-        if self.num_segments == 0:
-            return "Segment(0 segments): []"
-
-        segments = []
-        for i, ((start, end), label) in enumerate(zip(self.itvls, self.labels)):
-            segments.append(f"  {i}: [{start:.2f}-{end:.2f}s] {label}")
-        return "\n".join([f"Segment({self.num_segments} segments):"] + segments)
 
     def plot(
         self,

@@ -11,14 +11,14 @@ def test_basic_segment_creation():
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0], labels=["A", "B", "C"])
     assert seg.beta == {0.0, 1.0, 2.5, 4.0}
     assert seg.labels == ["A", "B", "C"]
-    assert seg.duration == 4.0
-    assert seg.num_segments == 3
+    expected_duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    assert expected_duration == 4.0
+    assert max(0, len(seg.beta) - 1) == 3
 
     # Test automatic label generation
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0])
     assert seg.labels == ["0.000", "1.000", "2.500"]
-    # Other properties (beta, duration, num_segments) are implicitly tested
-    # to be consistent by the first part, assuming beta processing is independent.
+
 
 
 def test_segment_properties():
@@ -26,7 +26,8 @@ def test_segment_properties():
     seg = Segment(beta=[0.5, 1.5, 3.0], labels=["A", "B"])
 
     # Test duration
-    assert seg.duration == 2.5
+    expected_duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    assert expected_duration == 2.5
 
     # Test intervals
     intervals = seg.itvls
@@ -42,7 +43,7 @@ def test_segment_properties():
 
 
 @pytest.mark.parametrize(
-    "intervals_input, labels_input, expected_beta, expected_labels, expected_num_segments, expected_duration",
+    "intervals_input, labels_input, expected_beta, expected_labels, expected_n_segments, expected_duration",
     [
         (  # Basic case
             np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]]),
@@ -75,15 +76,16 @@ def test_from_mir_eval(
     labels_input,
     expected_beta,
     expected_labels,
-    expected_num_segments,
+    expected_n_segments,
     expected_duration,
 ):
     """Test the from_mir_eval classmethod with various interval configurations."""
     seg = Segment.from_mir_eval(intervals_input, labels_input)
     assert seg.beta == expected_beta
     assert seg.labels == expected_labels
-    assert seg.num_segments == expected_num_segments
-    assert seg.duration == expected_duration
+    assert max(0, len(seg.beta) - 1) == expected_n_segments
+    duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    assert duration == expected_duration
 
 
 @pytest.mark.parametrize(
@@ -103,15 +105,14 @@ def test_from_mir_eval(
         ),
     ],
 )
-def test_zero_segment_cases(
-    beta_input, expected_beta_set, expected_str, expected_repr
-):
+def test_zero_segment_cases(beta_input, expected_beta_set, expected_str, expected_repr):
     """Test cases that result in zero segments (empty or single boundary)."""
     seg = Segment(beta=beta_input)
     assert seg.beta == expected_beta_set
     assert seg.labels == []
-    assert seg.duration == 0.0
-    assert seg.num_segments == 0
+    duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    assert duration == 0.0
+    assert max(0, len(seg.beta) - 1) == 0
     assert seg.itvls.size == 0
     assert str(seg) == expected_str
     assert repr(seg) == expected_repr
@@ -138,5 +139,5 @@ def test_beta_input_conversion_to_set(beta_input):
     """Test that beta input is correctly converted to a set, removing duplicates."""
     seg = Segment(beta=beta_input)
     assert seg.beta == {1.0, 2.0, 3.0}
-    # num_segments would be 2, labels auto-generated as ["1.000", "2.000"]
+    # number of segments would be 2, labels auto-generated as ["1.000", "2.000"]
     # This test focuses on beta set conversion.

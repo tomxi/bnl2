@@ -1,6 +1,4 @@
 """Visualization utilities for segmentations."""
-
-import warnings
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import librosa.display
@@ -159,26 +157,26 @@ def plot_segment(
     else:
         fig = ax.figure
 
-    # Set plot limits and content
-    sorted_beta = seg.boundaries
-    
-    if seg.num_segments != 0:
-        ax.set_xlim(sorted_beta[0], sorted_beta[-1])
+    # get extent of the segment
+    t_start = seg.boundaries[0] if seg.boundaries else 0.0
+    t_end = seg.boundaries[-1] if len(seg.boundaries) > 1 else t_start + 1.0
+
+    # only plot if there are segments
+    if len(seg.boundaries) > 1:
         _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
     else:
-        # Handle empty segments
-        start_time = sorted_beta[0] if sorted_beta else 0.0
-        end_time = sorted_beta[-1] if len(sorted_beta) > 1 else start_time + 1.0
-        if start_time == end_time:
-            end_time = start_time + 1.0
-        ax.set_xlim(start_time, end_time)
         ax.text(
-            0.5, 0.5, "Empty Segment",
-            ha="center", va="center", transform=ax.transAxes,
-            fontsize=10, color="gray"
-        )       
+            0.5,
+            0.5,
+            "Empty Segment",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+            fontsize=10,
+            color="gray",
+        )
 
-    # Apply common styling
+    ax.set_xlim(t_start, t_end)
     ax.set_ylim(0, 1)
 
     if time_ticks:

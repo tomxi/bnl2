@@ -30,7 +30,7 @@ class Segment:
 
     def __post_init__(self):
         """Validate inputs and generate labels if needed."""
-        # Ensure beta is a set (convert from list if needed)
+        # Ensure beta is a set (convert from other iterables if needed)
         if not isinstance(self.beta, set):
             self.beta = set(self.beta)
 
@@ -42,7 +42,7 @@ class Segment:
         # Generate labels if not provided
         if self.labels is None:
             # Generate labels from start times with 3 decimal places
-            sorted_beta = self._sorted_boundaries
+            sorted_beta = self.boundaries
             self.labels = [f"{start:.3f}" for start in sorted_beta[:-1]]
         elif len(self.labels) != len(self.beta) - 1:
             raise ValueError(
@@ -51,7 +51,7 @@ class Segment:
             )
 
     @property
-    def _sorted_boundaries(self) -> List[float]:
+    def boundaries(self) -> List[float]:
         """Get boundaries sorted in ascending order.
 
         Returns
@@ -72,7 +72,7 @@ class Segment:
         """
         if not self.beta:
             return np.array([])
-        return boundaries_to_intervals(np.array(self._sorted_boundaries))
+        return boundaries_to_intervals(np.array(self.boundaries))
 
     @property
     def duration(self) -> float:
@@ -85,7 +85,7 @@ class Segment:
         """
         if len(self.beta) < 2:
             return 0.0
-        sorted_beta = self._sorted_boundaries
+        sorted_beta = self.boundaries
         return sorted_beta[-1] - sorted_beta[0]
 
     @property

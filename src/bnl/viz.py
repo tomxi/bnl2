@@ -154,23 +154,29 @@ def plot_segment(
     ax : matplotlib.axes.Axes
         The axes object with the plot.
     """
-
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 0.6))  # short and wide
     else:
         fig = ax.figure
 
-    if seg.num_segments == 0:
-        # Handle empty segments. pass with a warning.
-        warnings.warn("Empty segment passed to plot_segment. Returning empty axes.")
-        return fig, ax
-
     # Set plot limits and content
-    sorted_beta = seg._sorted_boundaries
-    start_time = sorted_beta[0]
-    end_time = sorted_beta[-1]
-    ax.set_xlim(start_time, end_time)
-    _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
+    sorted_beta = seg.boundaries
+    
+    if seg.num_segments != 0:
+        ax.set_xlim(sorted_beta[0], sorted_beta[-1])
+        _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
+    else:
+        # Handle empty segments
+        start_time = sorted_beta[0] if sorted_beta else 0.0
+        end_time = sorted_beta[-1] if len(sorted_beta) > 1 else start_time + 1.0
+        if start_time == end_time:
+            end_time = start_time + 1.0
+        ax.set_xlim(start_time, end_time)
+        ax.text(
+            0.5, 0.5, "Empty Segment",
+            ha="center", va="center", transform=ax.transAxes,
+            fontsize=10, color="gray"
+        )       
 
     # Apply common styling
     ax.set_ylim(0, 1)

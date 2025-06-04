@@ -9,6 +9,7 @@ Installation
     git clone https://github.com/tomxi/bnl.git
     cd bnl
     pip install -e ".[dev,docs]"
+    Here's some more text
 
 Basic Usage
 -----------

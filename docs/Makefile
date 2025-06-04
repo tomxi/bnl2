@@ -12,17 +12,21 @@ BUILDDIR     = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-serve:
-	@echo "Building documentation..."
-	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	@echo "Serving at http://localhost:8000"
-	@echo "Tip: Refresh browser after making changes and running 'make serve' again"
-	cd _build/html && python3 -m http.server 8000
+liveserve: clean
+	@echo "Building and serving documentation with live reload..."
+	@echo "Watch for changes in: $(SOURCEDIR)"
+	@echo "Access at: http://localhost:8001"
+	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" \
+		--port 8001 \
+		--watch "$(SOURCEDIR)" \
+		--ignore "$(BUILDDIR)" \
+		--delay 1 \
+		--open-browser
 
 clean:
 	rm -rf "$(BUILDDIR)"
 
-.PHONY: help serve clean Makefile
+.PHONY: help liveserve clean Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

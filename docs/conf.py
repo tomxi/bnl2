@@ -68,6 +68,11 @@ html_theme_options = {
     'collapse_navigation': False,
 }
 
+# Custom navigation links
+html_context = {
+    'display_github': False,
+}
+
 # Intersphinx mapping
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),

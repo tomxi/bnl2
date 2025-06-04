@@ -34,8 +34,8 @@ dev = [
 ]
 
 [project.urls]
-Source = "https://github.com/tomxi/bnl"
-Issues = "https://github.com/tomxi/bnl/issues"
+Source = "https://github.com/tomxi/bnl2"
+Issues = "https://github.com/tomxi/bnl2/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

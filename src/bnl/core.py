@@ -29,7 +29,6 @@ class Segment:
     labels: Optional[List[str]] = None
 
     def __post_init__(self):
-        """Validate inputs and generate labels if needed."""
         # Ensure beta is a set (convert from other iterables if needed)
         if not isinstance(self.beta, set):
             self.beta = set(self.beta)
@@ -90,8 +89,8 @@ class Segment:
         return boundaries_to_intervals(np.array(self.boundaries))
 
     @classmethod
-    def from_mir_eval(cls, intervals: np.ndarray, labels: List[str]) -> "Segment":
-        """Create a Segment from mir_eval format.
+    def from_itvls(cls, intervals: np.ndarray, labels: List[str]) -> "Segment":
+        """Create a Segment from interval pairs and labels.
 
         Parameters
         ----------
@@ -118,8 +117,6 @@ class Segment:
         # Extract unique boundaries as a set
         boundaries = set(intervals.flatten())
         return cls(beta=boundaries, labels=labels)
-
-
 
     def plot(
         self,

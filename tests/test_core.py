@@ -71,7 +71,7 @@ def test_segment_properties():
         ),
     ],
 )
-def test_from_mir_eval(
+def test_from_itvls(
     intervals_input,
     labels_input,
     expected_beta,
@@ -79,8 +79,8 @@ def test_from_mir_eval(
     expected_n_segments,
     expected_duration,
 ):
-    """Test the from_mir_eval classmethod with various interval configurations."""
-    seg = Segment.from_mir_eval(intervals_input, labels_input)
+    """Test the from_itvls classmethod with various interval configurations."""
+    seg = Segment.from_itvls(intervals_input, labels_input)
     assert seg.beta == expected_beta
     assert seg.labels == expected_labels
     assert max(0, len(seg.beta) - 1) == expected_n_segments

@@ -9,7 +9,6 @@ Installation
     git clone https://github.com/tomxi/bnl2.git
     cd bnl2
     pip install -e ".[dev,docs]"
-    Here's some more text
 
 Basic Usage
 -----------
@@ -31,15 +30,6 @@ Basic Usage
     # Visualize
     fig, ax = plot_segment(seg, text=True)
 
-From mir_eval Format
---------------------
-
-.. code-block:: python
-
-    # Convert from mir_eval-style data
-    intervals = np.array([[0.0, 2.5], [2.5, 5.0], [5.0, 7.5], [7.5, 10.0]])
-    labels = ['A', 'B', 'A', 'C']
-    seg = Segment.from_mir_eval(intervals, labels)
 
 Next Steps
 ----------

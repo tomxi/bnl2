@@ -1,8 +1,9 @@
 """Visualization utilities for segmentations."""
 
+import warnings
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from librosa.display import TimeFormatter
+import librosa.display
 import numpy as np
 import itertools
 from cycler import cycler
@@ -33,11 +34,8 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
         {label: {style_property: value}} mapping with keys like 'facecolor',
         'edgecolor', 'linewidth', 'hatch', and 'label'.
     """
-    # Find unique elements in labels. Labels can be list of arrays, list of labels, or a single array
-    unique_labels = np.unique(
-        np.concatenate([np.atleast_1d(np.asarray(l)) for l in labels])
-    )
-    # This modification ensures that even a single label is treated as a 1-dimensional array.
+    # Extract unique labels from potentially nested structure
+    unique_labels = np.unique(np.concatenate([np.atleast_1d(l) for l in labels]))
 
     # More hatch patterns for more labels
     hatchs = ["", "..", "O.", "*", "xx", "xxO", "\\O", "oo", "\\"]
@@ -53,28 +51,32 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
         # make it repeat...
         p_cycler = itertools.cycle(hatch_cycler * fc_cycler)
 
-    # Create a mapping of labels to styles by cycling through the properties
-    # and assigning them to the labels as they appear in the unique labels' ordering
-    seg_map = dict()
+    # Create style mapping for each unique label
+    seg_map = {}
     for lab, properties in zip(unique_labels, p_cycler):
-        # set style according to p_cycler
+        # Extract relevant style properties
         style = {
             k: v
             for k, v in properties.items()
             if k in ["color", "facecolor", "edgecolor", "linewidth", "hatch"]
         }
-        # Swap color -> facecolor here so we preserve edgecolor on rects
+
+        # Convert color to facecolor to preserve edgecolor on rectangles
         if "color" in style:
-            style.setdefault("facecolor", style["color"])
-            style.pop("color", None)
-        seg_map[lab] = dict(linewidth=1, edgecolor=boundary_color)
-        seg_map[lab].update(style)
-        seg_map[lab].update(kwargs)
-        seg_map[lab]["label"] = lab
+            style["facecolor"] = style.pop("color")
+
+        # Build final style dictionary
+        seg_map[lab] = {
+            "linewidth": 1,
+            "edgecolor": boundary_color,
+            "label": lab,
+            **style,
+            **kwargs,
+        }
     return seg_map
 
 
-def _plot_intervals_and_labels(
+def _plot_itvl_lbls(
     intervals: np.ndarray,
     labels: List[str],
     ax: plt.Axes,
@@ -152,38 +154,30 @@ def plot_segment(
     ax : matplotlib.axes.Axes
         The axes object with the plot.
     """
+
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 0.6))  # short and wide
     else:
         fig = ax.figure
 
+    if seg.num_segments == 0:
+        # Handle empty segments. pass with a warning.
+        warnings.warn("Empty segment passed to plot_segment. Returning empty axes.")
+        return fig, ax
+
     # Set plot limits and content
     sorted_beta = seg._sorted_boundaries
-    
-    if seg.num_segments != 0:
-        ax.set_xlim(sorted_beta[0], sorted_beta[-1])
-        _plot_intervals_and_labels(
-            seg.itvls, seg.labels, ax, text=text, style_map=style_map
-        )
-    else:
-        # Handle empty segments
-        start_time = sorted_beta[0] if sorted_beta else 0.0
-        end_time = sorted_beta[-1] if len(sorted_beta) > 1 else start_time + 1.0
-        if start_time == end_time:
-            end_time = start_time + 1.0
-        ax.set_xlim(start_time, end_time)
-        ax.text(
-            0.5, 0.5, "Empty Segment",
-            ha="center", va="center", transform=ax.transAxes,
-            fontsize=10, color="gray"
-        )       
+    start_time = sorted_beta[0]
+    end_time = sorted_beta[-1]
+    ax.set_xlim(start_time, end_time)
+    _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
 
     # Apply common styling
     ax.set_ylim(0, 1)
 
     if time_ticks:
         ax.xaxis.set_major_locator(ticker.AutoLocator())
-        ax.xaxis.set_major_formatter(TimeFormatter())
+        ax.xaxis.set_major_formatter(librosa.display.TimeFormatter())
         ax.set_xlabel("Time (s)")
     else:
         ax.set_xticks([])

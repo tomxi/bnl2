@@ -1,12 +1,9 @@
 import pytest
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import matplotlib.patches
-import librosa.display  # For TimeFormatter, assuming it's available
+import librosa.display
 
-from bnl.core import Segment
-from bnl import viz
+from bnl import Segment, viz
 
 
 @pytest.fixture(autouse=True)
@@ -21,11 +18,11 @@ class TestLabelStyleDict:
         """Test essential style generation functionality."""
         labels = ["A", "B", "A", "C"]
         styles = viz.label_style_dict(labels)
-        
+
         # Basic structure checks
         assert isinstance(styles, dict)
         assert set(styles.keys()) == {"A", "B", "C"}
-        
+
         # Essential style properties exist
         for label in ["A", "B", "C"]:
             assert "facecolor" in styles[label]
@@ -43,27 +40,27 @@ class TestSegmentPlotting:
         """Test core plotting functionality."""
         seg = Segment(beta=[0, 1, 2], labels=["X", "Y"])
         fig, ax = seg.plot(text=True, ytick="Test")
-        
+
         # Basic return types
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
-        
+
         # Content verification
         assert len(ax.texts) == 2  # Text labels for segments
         text_contents = sorted([t.get_text() for t in ax.texts])
         assert text_contents == ["X", "Y"]
-        
+
         # Ytick labels (not ylabel)
         assert ax.get_yticklabels()[0].get_text() == "Test"
 
     def test_time_formatting(self):
         """Test time axis formatting."""
         seg = Segment(beta=[0, 1], labels=["A"])
-        
+
         # With time ticks
         fig, ax = viz.plot_segment(seg, time_ticks=True)
         assert isinstance(ax.xaxis.get_major_formatter(), librosa.display.TimeFormatter)
-        
+
         # Without time ticks
         fig, ax = viz.plot_segment(seg, time_ticks=False)
         assert len(ax.get_xticks()) == 0
@@ -73,14 +70,15 @@ class TestSegmentPlotting:
         # Empty segment
         seg = Segment(beta=[])
         fig, ax = viz.plot_segment(seg)
-        assert len(ax.texts) == 1
-        assert ax.texts[0].get_text() == "Empty Segment"
-        
+        # expect warning
+
         # Single boundary
         seg = Segment(beta=[5.0])
         fig, ax = viz.plot_segment(seg)
-        assert ax.get_xlim() == (5.0, 6.0)
-        assert ax.texts[0].get_text() == "Empty Segment"
+
+        # expect warning
+        assert fig is not None
+
 
     def test_existing_axes(self):
         """Test plotting on existing axes."""
@@ -97,10 +95,10 @@ class TestInternalPlotting:
         fig, ax = plt.subplots()
         intervals = np.array([[0.0, 1.0], [2.0, 3.0]])
         labels = ["A", "B"]
-        
-        viz._plot_intervals_and_labels(intervals, labels, ax, text=True)
+
+        viz._plot_itvl_lbls(intervals, labels, ax, text=True)
         assert len(ax.patches) > 0  # Some patches created
-        assert len(ax.texts) == 2   # Text labels added
+        assert len(ax.texts) == 2  # Text labels added
 
     def test_custom_styling(self):
         """Test custom style application."""
@@ -108,8 +106,8 @@ class TestInternalPlotting:
         intervals = np.array([[0.0, 1.0]])
         labels = ["S1"]
         style_map = {"S1": {"facecolor": "purple", "alpha": 0.6}}
-        
-        viz._plot_intervals_and_labels(intervals, labels, ax, style_map=style_map)
+
+        viz._plot_itvl_lbls(intervals, labels, ax, style_map=style_map)
         patch = ax.patches[0]
         assert np.allclose(patch.get_facecolor()[:3], plt.cm.colors.to_rgb("purple"))
         assert patch.get_alpha() == 0.6

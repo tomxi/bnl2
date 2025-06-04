@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from bnl.core import Segment
+from bnl import Segment
 
 
 def test_basic_segment_creation():
@@ -17,6 +17,8 @@ def test_basic_segment_creation():
     # Test automatic label generation
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0])
     assert seg.labels == ["0.000", "1.000", "2.500"]
+    # Other properties (beta, duration, num_segments) are implicitly tested
+    # to be consistent by the first part, assuming beta processing is independent.
 
 
 def test_segment_properties():
@@ -39,50 +41,84 @@ def test_segment_properties():
     assert repr(seg) == "Segment(2 segments, total_duration=2.50s)"
 
 
-def test_from_mir_eval():
-    """Test the from_mir_eval classmethod."""
-    intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
-    labels = ["A", "B", "C"]
-    seg = Segment.from_mir_eval(intervals, labels)
+@pytest.mark.parametrize(
+    "intervals_input, labels_input, expected_beta, expected_labels, expected_num_segments, expected_duration",
+    [
+        (  # Basic case
+            np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]]),
+            ["A", "B", "C"],
+            {0.0, 1.0, 2.5, 3.0},
+            ["A", "B", "C"],
+            3,
+            3.0,
+        ),
+        (  # Unsorted intervals
+            np.array([[1.0, 2.5], [0.0, 1.0], [2.5, 3.0]]),
+            ["L1", "L2", "L3"],  # Labels for segments from sorted boundaries
+            {0.0, 1.0, 2.5, 3.0},
+            ["L1", "L2", "L3"],
+            3,
+            3.0,
+        ),
+        (  # Overlapping intervals, new boundaries created
+            np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0], [2.0, 2.5]]),
+            ["S1", "S2", "S3", "S4"],  # Labels for 4 new segments
+            {0.0, 1.0, 2.0, 2.5, 3.0},
+            ["S1", "S2", "S3", "S4"],
+            4,
+            3.0,
+        ),
+    ],
+)
+def test_from_mir_eval(
+    intervals_input,
+    labels_input,
+    expected_beta,
+    expected_labels,
+    expected_num_segments,
+    expected_duration,
+):
+    """Test the from_mir_eval classmethod with various interval configurations."""
+    seg = Segment.from_mir_eval(intervals_input, labels_input)
+    assert seg.beta == expected_beta
+    assert seg.labels == expected_labels
+    assert seg.num_segments == expected_num_segments
+    assert seg.duration == expected_duration
 
-    assert seg.beta == {0.0, 1.0, 2.5, 3.0}
-    assert seg.labels == ["A", "B", "C"]
-    assert seg.num_segments == 3
-    assert seg.duration == 3.0
 
-    # Test with unsorted intervals
-    intervals = np.array([[1.0, 2.5], [0.0, 1.0], [2.5, 3.0]])
-    seg = Segment.from_mir_eval(intervals, labels)
-    assert seg.beta == {0.0, 1.0, 2.5, 3.0}
-
-    # Test with overlapping intervals (should deduplicate boundaries)
-    intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0], [2.0, 2.5]])
-    seg = Segment.from_mir_eval(intervals, ["A", "B", "C", "D"])
-    assert seg.beta == {0.0, 1.0, 2.0, 2.5, 3.0}
-    assert len(seg.labels) == 4  # Number of intervals
-
-
-def test_edge_cases():
-    """Test edge cases and error conditions."""
-    # Empty segment
-    seg = Segment(beta=[])
-    assert seg.beta == set()
+@pytest.mark.parametrize(
+    "beta_input, expected_beta_set, expected_str, expected_repr",
+    [
+        (
+            [],
+            set(),
+            "Segment(0 segments): []",
+            "Segment(0 segments, total_duration=0.00s)",
+        ),
+        (
+            [1.0],
+            {1.0},
+            "Segment(0 segments): []",
+            "Segment(0 segments, total_duration=0.00s)",
+        ),
+    ],
+)
+def test_zero_segment_cases(
+    beta_input, expected_beta_set, expected_str, expected_repr
+):
+    """Test cases that result in zero segments (empty or single boundary)."""
+    seg = Segment(beta=beta_input)
+    assert seg.beta == expected_beta_set
     assert seg.labels == []
     assert seg.duration == 0.0
     assert seg.num_segments == 0
     assert seg.itvls.size == 0
-    assert str(seg) == "Segment(0 segments): []"
-    assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
+    assert str(seg) == expected_str
+    assert repr(seg) == expected_repr
 
-    # Single boundary (no intervals)
-    seg = Segment(beta=[1.0])
-    assert seg.beta == {1.0}
-    assert seg.labels == []
-    assert seg.duration == 0.0
-    assert seg.num_segments == 0
-    assert repr(seg) == "Segment(0 segments, total_duration=0.00s)"
 
-    # Mismatched labels length
+def test_mismatched_labels_error():
+    """Test ValueError for mismatched number of labels and boundaries."""
     with pytest.raises(
         ValueError,
         match=r"Number of labels \(2\) must be one less than number of unique boundaries \(4\)",
@@ -90,17 +126,17 @@ def test_edge_cases():
         Segment(beta=[0.0, 1.0, 2.0, 3.0], labels=["A", "B"])
 
 
-def test_beta_input_gardening():
-    """Test that beta is properly converted to a set."""
-    # Test with list input
-    seg = Segment(beta=[1.0, 2.0, 1.0, 3.0])  # duplicates should be removed
+@pytest.mark.parametrize(
+    "beta_input",
+    [
+        [1.0, 2.0, 1.0, 3.0],  # list with duplicates
+        {1.0, 2.0, 3.0},  # set
+        (1.0, 2.0, 3.0),  # tuple
+    ],
+)
+def test_beta_input_conversion_to_set(beta_input):
+    """Test that beta input is correctly converted to a set, removing duplicates."""
+    seg = Segment(beta=beta_input)
     assert seg.beta == {1.0, 2.0, 3.0}
-    assert len(seg.beta) == 3
-    
-    # Test with set input
-    seg = Segment(beta={1.0, 2.0, 3.0})
-    assert seg.beta == {1.0, 2.0, 3.0}
-    
-    # Test with tuple input
-    seg = Segment(beta=(1.0, 2.0, 3.0))
-    assert seg.beta == {1.0, 2.0, 3.0}
+    # num_segments would be 2, labels auto-generated as ["1.000", "2.000"]
+    # This test focuses on beta set conversion.

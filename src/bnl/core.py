@@ -53,7 +53,7 @@ class Segment:
     @property
     def _sorted_boundaries(self) -> List[float]:
         """Get boundaries sorted in ascending order.
-        
+
         Returns
         -------
         list of float
@@ -133,7 +133,7 @@ class Segment:
         return f"Segment({self.num_segments} segments, total_duration={self.duration:.2f}s)"
 
     def __str__(self) -> str:
-        if not self.beta:
+        if self.num_segments == 0:
             return "Segment(0 segments): []"
 
         segments = []

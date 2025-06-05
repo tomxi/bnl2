@@ -1,75 +1,96 @@
 """Core data structures and constructors."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set, Tuple
 import numpy as np
 from mir_eval.util import boundaries_to_intervals
 
 
 @dataclass
-class Segment:
-    """Labeled time intervals represented using boundaries (beta).
+class TimeSpan:
+    """A labeled time span with start and end times.
 
     Parameters
     ----------
-    beta : set of float
-        Set of boundary times in seconds.
-    labels : list of str, optional
-        Labels for each interval between boundaries.
-        Length must be exactly one less than the number of boundaries.
+    start : float
+        Start time in seconds.
+    end : float
+        End time in seconds.
+    label : str, optional
+        Label for this time span.
 
     Examples
     --------
-    >>> seg = Segment(beta={0.0, 1.0, 2.0}, labels=['A', 'B'])
-    >>> seg.duration
+    >>> span = TimeSpan(start=1.0, end=3.0, label='chorus')
+    >>> span.duration
     2.0
+    >>> span.itvl
+    array([1., 3.])
     """
 
-    beta: Set[float]
-    labels: Optional[List[str]] = None
+    start: float = 0.0
+    end: float = 0.0
+    name: Optional[str] = None
 
     def __post_init__(self):
-        # Ensure beta is a set (convert from other iterables if needed)
-        if not isinstance(self.beta, set):
-            self.beta = set(self.beta)
-
-        # Handle empty boundaries
-        if not self.beta:
-            self.labels = []
-            return
-
-        # Generate labels if not provided
-        if self.labels is None:
-            # Generate labels from start times with 3 decimal places
-            sorted_beta = self.boundaries
-            self.labels = [f"{start:.3f}" for start in sorted_beta[:-1]]
-        elif len(self.labels) != len(self.beta) - 1:
+        if self.start > self.end:
             raise ValueError(
-                f"Number of labels ({len(self.labels)}) must be one less than "
-                f"number of unique boundaries ({len(self.beta)})"
+                f"Start time ({self.start}) must be less than end time ({self.end})"
             )
-        
+
+    def __repr__(self) -> str:
+        label_str = f", label='{self.name}'" if self.name else "○"
+        return f"TimeSpan([{self.start:.2f}, {self.end:.2f}], {label_str})"
+
+    def __str__(self) -> str:
+        label_str = f" ({self.name})" if self.name else "○"
+        return f"[{self.start:.2f}-{self.end:.2f}s]{label_str}"
+
+
+@dataclass
+class Segmentation(TimeSpan):
+    """A segmentation containing multiple time spans.
+
+    Parameters
+    ----------
+    segments : List[TimeSpan]
+        List of TimeSpan objects representing the segments.
+        Must be sorted, non-overlapping, and contiguous.
+
+    Examples
+    --------
+    >>> span1 = TimeSpan(start=0.0, end=2.0, name='A')
+    >>> span2 = TimeSpan(start=2.0, end=5.0, name='B')
+    >>> segmentation = Segmentation(segments=[span1, span2])
+    """
+
+    segments: List[TimeSpan] = field(default_factory=list)
+
+    def __post_init__(self):
+        # order the segments by start time
+        self.segments = sorted(self.segments, key=lambda x: x.start)
+
+        # Set start/end from segments if available
+        if self.segments:
+            object.__setattr__(self, "start", self.segments[0].start)
+            object.__setattr__(self, "end", self.segments[-1].end)
+
     def __len__(self) -> int:
-        """Get the number of segments in the segment.
-        """
-        return len(self.labels)
-    
-    def __getitem__(self, idx: int) -> Tuple[Tuple[float, float], str]:
-        """Get the interval and label at the given index.
-        """
-        interval = self.itvls[idx]
-        return (float(interval[0]), float(interval[1])), self.labels[idx]
+        return len(self.segments)
+
+    def __getitem__(self, idx: int) -> TimeSpan:
+        return self.segments[idx]
 
     @property
-    def boundaries(self) -> List[float]:
-        """Get boundaries sorted in ascending order.
+    def labels(self) -> List[Optional[str]]:
+        """Get labels from all segments.
 
         Returns
         -------
-        list of float
-            Sorted list of boundary times.
+        List[Optional[str]]
+            List of labels from each segment.
         """
-        return sorted(self.beta)
+        return [seg.name for seg in self.segments]
 
     @property
     def itvls(self) -> np.ndarray:
@@ -78,17 +99,30 @@ class Segment:
         Returns
         -------
         np.ndarray
-            Array of interval start and end times, shape=(n_intervals, 2).
+            Array of interval start and end times, shape=(n_segments, 2).
         """
-        if not self.beta:
+        if not self.segments:
             return np.array([])
-        return boundaries_to_intervals(np.array(self.boundaries))
-    
+        return np.array([[seg.start, seg.end] for seg in self.segments])
+
     @property
-    def duration(self) -> float:
-        """Get the total duration of the segment.
+    def bdrys(self) -> List[float]:
+        """Get all boundaries from the segmentation.
+
+        Returns
+        -------
+        List[float]
+            Sorted list of all boundary times.
         """
-        return self.boundaries[-1] - self.boundaries[0] if len(self.boundaries) > 1 else 0.0
+        if not self.segments:
+            return []
+        boundaries = [self.segments[0].start]
+        boundaries.extend([seg.end for seg in self.segments])
+        return boundaries
+
+    def __repr__(self) -> str:
+        dur = self.end - self.start
+        return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
 
     def plot(
         self,
@@ -98,7 +132,7 @@ class Segment:
         time_ticks: bool = True,
         style_map: Optional[Dict[str, Any]] = None,
     ):
-        """Plot the segment boundaries and labels.
+        """Plot the segmentation boundaries and labels.
 
         This is a convenience wrapper around `bnl.viz.plot_segment`.
 
@@ -127,9 +161,8 @@ class Segment:
         --------
         bnl.viz.plot_segment : The underlying plotting function.
         bnl.viz.label_style_dict : Function to generate style maps.
-
         """
-        from .viz import plot_segment  # matplotlib is now a mandatory dependency
+        from .viz import plot_segment
 
         return plot_segment(
             self,
@@ -140,67 +173,60 @@ class Segment:
             style_map=style_map,
         )
 
-    def __repr__(self) -> str:
-        return f"Segment({len(self)} segments, total_duration={self.duration:.2f}s)"
-
     def __str__(self) -> str:
         if len(self) == 0:
-            return "Segment(0 segments): []"
+            return "Segmentation(0 segments): []"
 
         segments_str = []
-        for i in range(len(self)):
-            (start, end), label = self[i]
-            segments_str.append(f" [{start:.2f}-{end:.2f}s] {label}")
-        return "\n".join([f"Segment({len(self)} segments):"] + segments_str)
+        for i, seg in enumerate(self.segments):
+            segments_str.append(f" {seg}")
+        return "\n".join([f"Segmentation({len(self)} segments):"] + segments_str)
 
 
 @dataclass
-class Hierarchy:
-    """A hierarchical structure of segments.
+class Hierarchy(TimeSpan):
+    """A hierarchical structure of segmentations.
 
-    A Hierarchy is an ordered list of Segment objects, representing different
-    levels of segmentation.
+    A Hierarchy is a TimeSpan containing multiple layers of Segmentation objects,
+    representing different levels of segmentation from coarsest to finest.
 
     Parameters
     ----------
-    layers : List[Segment]
-        An ordered list of Segment objects, from coarsest to finest levels.
+    layers : List[Segmentation]
+        An ordered list of Segmentation objects, from coarsest to finest levels.
 
-    Examples
-    --------
-    >>> from bnl import Segment
-    >>> seg1 = Segment(beta={0.0, 1.0, 2.0}, labels=['A', 'B'])
-    >>> seg2 = Segment(beta={0.0, 0.5, 1.0, 1.5, 2.0}, labels=['a', 'b', 'c', 'd'])
-    >>> hierarchy = Hierarchy(layers=[seg1, seg2])
     """
-    layers: List[Segment]
+
+    layers: List[Segmentation] = field(default_factory=list)
 
     def __post_init__(self):
-        if not isinstance(self.layers, list):
-            raise TypeError("layers must be a list of Segment objects.")
-        for i, segment in enumerate(self.layers):
-            if not isinstance(segment, Segment):
-                raise TypeError(f"Element at index {i} is not a Segment object.")
+        # order the layers by start time
+        self.layers = sorted(self.layers, key=lambda x: x.start)
+
+        # Set start/end from layers if available
+        if self.layers:
+            object.__setattr__(self, "start", self.layers[0].start)
+            object.__setattr__(self, "end", self.layers[0].end)
 
     def __len__(self) -> int:
         return len(self.layers)
-    
-    def __getitem__(self, lvl_idx: int) -> Segment:
+
+    def __getitem__(self, lvl_idx: int) -> Segmentation:
         return self.layers[lvl_idx]
 
     @property
     def itvls(self) -> List[np.ndarray]:
         """Get the intervals of the hierarchy.
-        
+
         Returns
         -------
-        list of np.ndarray 
+        list of np.ndarray
             A list of interval arrays for all levels.
         """
         return [lvl.itvls for lvl in self.layers]
 
     @property
-    def labels(self) -> List[List[str]]:
+    def labels(self) -> List[List[Optional[str]]]:
         """Get the labels of the hierarchy.
 
         Returns
@@ -211,55 +237,43 @@ class Hierarchy:
         return [lvl.labels for lvl in self.layers]
 
     @property
-    def beta(self) -> Set[float]:
+    def bdrys(self) -> List[List[float]]:
         """Get the boundaries of the hierarchy.
 
         Returns
         -------
-        set of float
-            The union of boundary sets from all levels.
+        list of list of float
+            A list of boundary lists for all levels.
         """
-        all_beta = set()
-        for lvl in self.layers:
-            all_beta.update(lvl.beta)
-        return all_beta
-        
+        return [lvl.bdrys for lvl in self.layers]
 
     def __repr__(self) -> str:
-        return f"Hierarchy(depth={len(self)})"
+        return f"Hierarchy(depth={len(self)}, duration={self.duration:.2f}s)"
 
     def __str__(self) -> str:
         if len(self) == 0:
             return "Hierarchy(0 levels): []"
-        
-        lines = [f"Hierarchy({len(self)} levels):"]
+
+        lines = [f"Hierarchy({len(self)} levels, duration={self.duration:.2f}s):"]
         for i, lvl in enumerate(self.layers):
             lines.append(f"Level {i}: {lvl}")
         return "\n".join(lines)
 
 
-def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segment:
-    """Create segment from interval array.
+def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segmentation:
+    """Create segmentation from interval array."""
+    time_spans = [
+        TimeSpan(start=interval[0], end=interval[1], name=label)
+        for interval, label in zip(intervals, labels)
+    ]
+    return Segmentation(segments=time_spans)
 
-    Parameters
-    ----------
-    intervals : np.ndarray [shape=(n, 2)]
-        Array of interval start and end times.
-        Each row should be [start_time, end_time] in seconds.
-    labels : list of str [length=n]
-        Label for each interval in `intervals`.
-        Length must match the number of intervals.
 
-    Returns
-    -------
-    Segment
-        A new Segment instance with boundaries derived from the interval endpoints.
-
-    Examples
-    --------
-    >>> intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
-    >>> labels = ['A', 'B', 'C']
-    >>> seg = seg_from_itvls(intervals, labels)
-    """
-    boundaries = set(intervals.flatten())
-    return Segment(beta=boundaries, labels=labels)
+def seg_from_brdys(boundaries, labels: List[str]) -> Segmentation:
+    """Create segmentation from boundaries."""
+    intervals = boundaries_to_intervals(np.array(sorted(boundaries)))
+    time_spans = [
+        TimeSpan(start=interval[0], end=interval[1], name=label)
+        for interval, label in zip(intervals, labels)
+    ]
+    return Segmentation(segments=time_spans)

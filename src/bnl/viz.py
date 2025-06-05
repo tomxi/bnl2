@@ -11,7 +11,7 @@ from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 
 # Import Segmentation for type hinting only to avoid circular dependency
 if TYPE_CHECKING:
-    from .core import Segmentation # pragma: no cover
+    from .core import Segmentation  # pragma: no cover
 
 
 def label_style_dict(labels, boundary_color="white", **kwargs):

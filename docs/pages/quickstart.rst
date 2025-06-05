@@ -16,15 +16,17 @@ Basic Usage
 .. code-block:: python
 
     import numpy as np
-    from bnl import Segment, plot_segment
+    from bnl import seg_from_brdys, plot_segment
 
-    # Create boundaries and labels - boundaries as a set
-    boundaries = {0.0, 2.5, 5.0, 7.5, 10.0}
+    # Create segmentation from boundaries
+    boundaries = [0.0, 2.5, 5.0, 7.5, 10.0]
     labels = ['A', 'B', 'A', 'C']
-    seg = Segment(boundaries, labels)
+    seg = seg_from_brdys(boundaries, labels)
 
     # Access properties
     print(f"Duration: {seg.duration}")
+    print(f"Labels: {seg.labels}")
+    print(f"Boundaries: {seg.bdrys}")
 
     # Visualize
     fig, ax = plot_segment(seg, text=True)

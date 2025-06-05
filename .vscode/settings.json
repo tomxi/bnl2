@@ -1,5 +1,9 @@
 {
     "autoDocstring.docstringFormat": "numpy",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+    },
     "files.exclude": {
         "**/__pycache__": true,
         "**/*.egg-info": true,

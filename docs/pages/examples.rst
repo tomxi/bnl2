@@ -35,3 +35,43 @@ Visualization
     plot_segment(reference, ax=axes[0], text=True, ytick="Reference")
     plot_segment(prediction, ax=axes[1], text=True, ytick="Prediction")
     plt.tight_layout()
+
+
+Working with SALAMI Data
+-------------------------
+
+Loading and exploring the SALAMI dataset:
+
+.. code-block:: python
+
+    import bnl.data as data
+    import matplotlib.pyplot as plt
+
+    # Explore available tracks
+    track_ids = data.slm.list_tids()
+    print(f"Available SALAMI tracks: {len(track_ids)}")
+    
+    # Load a specific track
+    track = data.slm.load_track('10')
+    print(f"Track: {track}")
+    
+    # Access metadata
+    info = track.info
+    print(f"Artist: {info['artist']}")
+    print(f"Title: {info['title']}")
+    print(f"Duration: {info['duration']:.1f}s")
+    
+    # Access JAMS annotation data
+    jams_obj = track.jams
+    print(f"Annotations: {len(jams_obj.annotations)}")
+    
+    # Load multiple tracks for analysis
+    sample_tracks = data.slm.load_tracks(['10', '100', '1000'])
+    durations = [track.info['duration'] for track in sample_tracks]
+    print(f"Sample durations: {durations}")
+
+.. note::
+   To use data loading functionality, ensure SALAMI dataset files are in ``~/data/``:
+   
+   - JAMS annotations: ``~/data/salami-jams/``
+   - Audio files: ``~/data/salami/audio/``

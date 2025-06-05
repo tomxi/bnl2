@@ -125,7 +125,8 @@ class Segmentation(TimeSpan):
     def plot(
         self,
         ax=None,
-        text: bool = False,
+        text: bool = True,
+        title: bool = True,
         ytick: str = "",
         time_ticks: bool = True,
         style_map: Optional[Dict[str, Any]] = None,
@@ -140,6 +141,8 @@ class Segmentation(TimeSpan):
             Axes to plot on. If None, a new figure and axes are created.
         text : bool, default=False
             Whether to display segment labels as text on the plot.
+        title : bool, default=True
+            Whether to display a title on the axis.
         ytick : str, default=""
             Label for the y-axis. If empty, no label is shown.
         time_ticks : bool, default=True
@@ -166,6 +169,7 @@ class Segmentation(TimeSpan):
             self,
             ax=ax,
             text=text,
+            title=title,
             ytick=ytick,
             time_ticks=time_ticks,
             style_map=style_map,
@@ -175,10 +179,14 @@ class Segmentation(TimeSpan):
         if len(self) == 0:
             return "Segmentation(0 segments): []"
 
-        segments_str = []
-        for i, seg in enumerate(self.segments):
-            segments_str.append(f" {seg}")
-        return "\n".join([f"Segmentation({len(self)} segments):"] + segments_str)
+        if len(self) == 1:
+            # For single segments, use compact format
+            dur = self.end - self.start
+            return f"Segmentation({len(self)} segments, duration={dur:.2f}s): {self.segments[0]}"
+        else:
+            # For multiple segments, use repr-style format
+            dur = self.end - self.start
+            return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
 
 
 @dataclass
@@ -254,10 +262,12 @@ class Hierarchy(TimeSpan):
             return "Hierarchy(0 levels): []"
 
         dur = self.end - self.start if self.layers else 0.0
-        lines = [f"Hierarchy({len(self)} levels, duration={dur:.2f}s):"]
-        for i, lvl in enumerate(self.layers):
-            lines.append(f"Level {i}: {lvl}")
-        return "\n".join(lines)
+        if len(self) == 1:
+            # For single layer, use compact format
+            return f"Hierarchy({len(self)} levels, duration={dur:.2f}s): Level 0: {self.layers[0]}"
+        else:
+            # For multiple layers, use summary format
+            return f"Hierarchy({len(self)} levels, duration={dur:.2f}s)"
 
 
 def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segmentation:

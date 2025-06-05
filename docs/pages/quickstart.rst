@@ -32,6 +32,33 @@ Basic Usage
     fig, ax = plot_segment(seg, text=True)
 
 
+Loading Data
+------------
+
+BNL supports loading real musical structure data from the SALAMI dataset:
+
+.. code-block:: python
+
+    import bnl.data as data
+
+    # List available SALAMI tracks
+    track_ids = data.slm.list_tids()
+    print(f"Found {len(track_ids)} tracks")
+
+    # Load a single track
+    track = data.slm.load_track('10')
+    print(f"Loaded: {track}")
+    print(f"Track info: {track.info}")
+
+    # Access JAMS annotation data
+    jams_obj = track.jams
+    print(f"Duration: {jams_obj.file_metadata.duration}")
+
+.. note::
+   Data loading requires SALAMI dataset files in ``~/data/``. 
+   See the examples for more details on data setup.
+
+
 Next Steps
 ----------
 

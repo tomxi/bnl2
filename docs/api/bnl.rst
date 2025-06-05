@@ -5,4 +5,5 @@ API Reference
    :maxdepth: 3
 
    core
+   data
    viz 

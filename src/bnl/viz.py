@@ -123,7 +123,8 @@ def _plot_itvl_lbls(
 def plot_segment(
     seg: "Segmentation",
     ax: Optional[plt.Axes] = None,
-    text: bool = False,
+    text: bool = True,
+    title: bool = True,
     ytick: str = "",
     time_ticks: bool = True,
     style_map: Optional[Dict[str, Dict[str, Any]]] = None,
@@ -136,8 +137,10 @@ def plot_segment(
         The Segmentation object to plot.
     ax : matplotlib.axes.Axes, optional
         Axes to plot on. If None, a new figure and axes are created.
-    text : bool, default=False
+    text : bool, default=True
         Whether to display segment labels as text on the plot.
+    title : bool, default=True
+        Whether to display a title on the axis.
     ytick : str, default=""
         Label for the y-axis. If empty, no label is shown.
     time_ticks : bool, default=True
@@ -177,6 +180,8 @@ def plot_segment(
             color="gray",
         )
 
+    if title and seg.name:
+        ax.set_title(seg.name)
     ax.set_xlim(t_start, t_end)
     ax.set_ylim(0, 1)
 

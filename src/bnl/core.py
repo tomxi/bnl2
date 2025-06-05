@@ -262,12 +262,7 @@ class Hierarchy(TimeSpan):
             return "Hierarchy(0 levels): []"
 
         dur = self.end - self.start if self.layers else 0.0
-        if len(self) == 1:
-            # For single layer, use compact format
-            return f"Hierarchy({len(self)} levels, duration={dur:.2f}s): Level 0: {self.layers[0]}"
-        else:
-            # For multiple layers, use summary format
-            return f"Hierarchy({len(self)} levels, duration={dur:.2f}s)"
+        return f"Hierarchy({len(self)} levels, duration={dur:.2f}s)"
 
 
 def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segmentation:

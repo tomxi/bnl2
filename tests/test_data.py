@@ -113,3 +113,42 @@ def test_salami_edge_cases():
     fake_dir = Path("/non/existent/directory")
     result = find_audio_file("nonexistent", fake_dir)
     assert result is None
+
+
+def test_dataset_config_and_missing_paths():
+    """Test custom dataset config and handling of missing files/directories."""
+    from bnl.data.base import DatasetConfig, set_config, get_config
+    from bnl.data.salami import find_audio_file, list_tids
+    from pathlib import Path
+
+    original_config = get_config()
+
+    # Create config with custom non-existent paths (covers path conversion lines)
+    custom_config = DatasetConfig(
+        data_root="/tmp/nonexistent_data",
+        salami_annotations_dir="/tmp/nonexistent_jams",
+        salami_audio_dir="/tmp/nonexistent_audio",
+        adobe_estimations_dir="/tmp/nonexistent_adobe",
+    )
+
+    # Verify Path objects were created from string inputs
+    assert isinstance(custom_config.data_root, Path)
+    assert isinstance(custom_config.salami_annotations_dir, Path)
+    assert isinstance(custom_config.salami_audio_dir, Path)
+    assert isinstance(custom_config.adobe_estimations_dir, Path)
+
+    # Set the custom config globally
+    set_config(custom_config)
+    assert get_config() == custom_config
+
+    # Test missing directory scenarios
+    tids = list_tids()  # Should handle missing annotations_dir gracefully
+    assert tids == []
+
+    result = find_audio_file(
+        "test", Path("/tmp/nonexistent")
+    )  # Missing track directory
+    assert result is None
+
+    # Restore original config
+    set_config(original_config)

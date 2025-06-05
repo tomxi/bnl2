@@ -38,6 +38,11 @@ class TimeSpan:
                 f"Start time ({self.start}) must be less than end time ({self.end})"
             )
 
+    @property
+    def duration(self) -> float:
+        """Get the duration of the time span."""
+        return self.end - self.start
+
     def __repr__(self) -> str:
         label_str = f", label='{self.name}'" if self.name else "○"
         return f"TimeSpan([{self.start:.2f}, {self.end:.2f}], {label_str})"

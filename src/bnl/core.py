@@ -5,6 +5,8 @@ from typing import Optional, List, Dict, Any, Set, Tuple
 import numpy as np
 from mir_eval.util import boundaries_to_intervals
 
+__all__ = ["TimeSpan", "Segmentation", "Hierarchy"]
+
 
 @dataclass
 class TimeSpan:
@@ -188,6 +190,31 @@ class Segmentation(TimeSpan):
             dur = self.end - self.start
             return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
 
+    @classmethod
+    def from_intervals(cls, intervals: np.ndarray, labels: List[str]) -> "Segmentation":
+        """Create segmentation from an interval array."""
+        time_spans = [
+            TimeSpan(start=interval[0], end=interval[1], name=label)
+            for interval, label in zip(intervals, labels)
+        ]
+        return cls(segments=time_spans)
+
+    @classmethod
+    def from_boundaries(cls, boundaries, labels: List[str]) -> "Segmentation":
+        """Create segmentation from a list of boundaries."""
+        intervals = boundaries_to_intervals(np.array(sorted(boundaries)))
+        time_spans = [
+            TimeSpan(start=interval[0], end=interval[1], name=label)
+            for interval, label in zip(intervals, labels)
+        ]
+        return cls(segments=time_spans)
+
+    @classmethod
+    def from_jams(cls, anno) -> "Segmentation":
+        """Create segmentation from a JAMS annotation. (Not yet implemented)"""
+        # TODO: Implement JAMS open_segment annotation parsing
+        pass
+
 
 @dataclass
 class Hierarchy(TimeSpan):
@@ -264,21 +291,12 @@ class Hierarchy(TimeSpan):
         dur = self.end - self.start if self.layers else 0.0
         return f"Hierarchy({len(self)} levels, duration={dur:.2f}s)"
 
+    def plot(self, **kwargs):
+        """Plots the hierarchy. (Not yet implemented)"""
+        pass
 
-def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segmentation:
-    """Create segmentation from interval array."""
-    time_spans = [
-        TimeSpan(start=interval[0], end=interval[1], name=label)
-        for interval, label in zip(intervals, labels)
-    ]
-    return Segmentation(segments=time_spans)
-
-
-def seg_from_brdys(boundaries, labels: List[str]) -> Segmentation:
-    """Create segmentation from boundaries."""
-    intervals = boundaries_to_intervals(np.array(sorted(boundaries)))
-    time_spans = [
-        TimeSpan(start=interval[0], end=interval[1], name=label)
-        for interval, label in zip(intervals, labels)
-    ]
-    return Segmentation(segments=time_spans)
+    @classmethod
+    def from_jams(cls, anno) -> "Hierarchy":
+        """Create hierarchy from a JAMS annotation. (Not yet implemented)"""
+        # TODO: Implement JAMS multilevel annotation parsing
+        pass

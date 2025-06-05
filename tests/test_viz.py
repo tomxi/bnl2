@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import librosa.display
 
-from bnl import Segmentation, TimeSpan, seg_from_brdys, viz
+from bnl import Segmentation, TimeSpan, viz
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +37,7 @@ def test_label_style_dict():
 
 def test_segmentation_plotting():
     """Test segmentation plotting functionality."""
-    seg = seg_from_brdys([0, 1, 2], ["X", "Y"])
+    seg = Segmentation.from_boundaries([0, 1, 2], ["X", "Y"])
 
     # Basic plotting
     fig, ax = seg.plot(text=True, ytick="Test")
@@ -54,7 +54,7 @@ def test_segmentation_plotting():
     assert len(ax.get_xticks()) == 0
 
     # Edge cases - single segment
-    single_seg = seg_from_brdys([0, 1], ["X"])
+    single_seg = Segmentation.from_boundaries([0, 1], ["X"])
     fig, ax = viz.plot_segment(single_seg)
     assert fig is not None
 

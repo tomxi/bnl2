@@ -10,25 +10,36 @@ viz
     Visualization utilities for segmentations.
 data
     Data loading and management for musical structure datasets.
+ops
+    Operations and transformations on BNL objects.
+metrics
+    Evaluation metrics for segmentations.
 """
 
 __version__ = "0.1.0"
 
-from .core import TimeSpan, Segmentation, seg_from_itvls, seg_from_brdys, Hierarchy
+# --- Import submodules for explicit, namespaced access ---
 from . import viz
 from . import data
+from . import ops
+from . import metrics
 
-# Explicitly import viz functions to make them available at package level
-from .viz import plot_segment, label_style_dict
+# --- Promote the core data structures to the top level ---
+from .core import (
+    TimeSpan,
+    Segmentation,
+    Hierarchy,
+)
 
+# --- Define the public-facing API of the `bnl` package ---
 __all__ = [
+    # Promoted from .core
     "TimeSpan",
     "Segmentation",
-    "seg_from_itvls",
-    "seg_from_brdys",
     "Hierarchy",
+    # Submodules (toolboxes)
     "viz",
     "data",
-    "plot_segment",
-    "label_style_dict",
+    "ops",
+    "metrics",
 ]

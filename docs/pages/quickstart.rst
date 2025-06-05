@@ -16,12 +16,12 @@ Basic Usage
 .. code-block:: python
 
     import numpy as np
-    from bnl import seg_from_brdys, plot_segment
+    from bnl import Segmentation, viz
 
     # Create segmentation from boundaries
     boundaries = [0.0, 2.5, 5.0, 7.5, 10.0]
     labels = ['A', 'B', 'A', 'C']
-    seg = seg_from_brdys(boundaries, labels)
+          seg = Segmentation.from_boundaries(boundaries, labels)
 
     # Access properties
     print(f"Duration: {seg.end - seg.start}")

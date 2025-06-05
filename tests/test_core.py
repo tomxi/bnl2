@@ -1,15 +1,14 @@
 import pytest
 import numpy as np
+import bnl
 
-from bnl import Segmentation, TimeSpan, seg_from_itvls, seg_from_brdys, Hierarchy
 
-
-def test_segmentation_basic():
-    """Test basic segmentation functionality."""
-    seg = Segmentation(
+def test_segmentation_basic_init():
+    """Test basic segmentation functionality via __init__."""
+    seg = bnl.Segmentation(
         segments=[
-            TimeSpan(start=0.0, end=1.5, name="verse"),
-            TimeSpan(start=1.5, end=3.0, name="chorus"),
+            bnl.TimeSpan(start=0.0, end=1.5, name="verse"),
+            bnl.TimeSpan(start=1.5, end=3.0, name="chorus"),
         ]
     )
     assert seg.bdrys == [0.0, 1.5, 3.0]
@@ -19,41 +18,37 @@ def test_segmentation_basic():
 
 def test_hierarchy_basic():
     """Test basic hierarchy functionality."""
-    seg1 = seg_from_brdys([0.0, 2.0], ["A"])
-    seg2 = seg_from_brdys([0.0, 1.0, 2.0], ["a", "b"])
-    hierarchy = Hierarchy(layers=[seg1, seg2])
+    seg1 = bnl.Segmentation.from_boundaries([0.0, 2.0], ["A"])
+    seg2 = bnl.Segmentation.from_boundaries([0.0, 1.0, 2.0], ["a", "b"])
+    hierarchy = bnl.Hierarchy(layers=[seg1, seg2])
     assert len(hierarchy) == 2
     assert hierarchy[0] == seg1
 
 
-def test_seg_from_itvls():
-    """Test interval-based construction."""
+def test_segmentation_from_intervals():
+    """Test classmethod construction from intervals."""
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
     labels = ["A", "B", "C"]
-    seg = seg_from_itvls(intervals, labels)
+    seg = bnl.Segmentation.from_intervals(intervals, labels)
     assert seg.labels == labels
 
 
-def test_seg_from_brdys():
-    """Test boundary-based construction."""
+def test_segmentation_from_boundaries():
+    """Test classmethod construction from boundaries."""
     boundaries = [1, 3, 5, 6]
     labels = ["vocals", "drums", "bass"]
-    seg = seg_from_brdys(boundaries, labels)
+    seg = bnl.Segmentation.from_boundaries(boundaries, labels)
     assert seg.bdrys == [1, 3, 5, 6]
     assert seg.labels == labels
 
 
 def test_str_repr():
-    """Test string representation."""
-    seg = Segmentation(segments=[TimeSpan(start=0.0, end=1.0, name="A")])
-    seg2 = Segmentation(
-        segments=[
-            TimeSpan(start=0.0, end=0.5, name="B"),
-            TimeSpan(start=0.5, end=1.0, name="C"),
-        ]
+    """Test string representation of core classes."""
+    seg = bnl.Segmentation(segments=[bnl.TimeSpan(start=0.0, end=1.0, name="A")])
+    seg2 = bnl.Segmentation.from_intervals(
+        np.array([[0.0, 0.5], [0.5, 1.0]]), ["B", "C"]
     )
-    hierarchy = Hierarchy(layers=[seg, seg2])
-    # The actual output is just the simple format without detailed breakdown
+    hierarchy = bnl.Hierarchy(layers=[seg, seg2])
     assert str(hierarchy) == "Hierarchy(2 levels, duration=1.00s)"
     assert repr(hierarchy) == "Hierarchy(depth=2, duration=1.00s)"
 
@@ -63,24 +58,24 @@ def test_str_repr():
     assert repr(seg2) == "Segmentation(2 segments, duration=1.00s)"
 
 
-def test_edge_cases_coverage():
-    """Test edge cases for coverage completeness."""
-    # Test TimeSpan validation error (line 35)
+def test_core_edge_cases_and_validation():
+    """Test edge cases and validation for core classes."""
+    # Test TimeSpan validation error
     with pytest.raises(ValueError):
-        TimeSpan(start=2.0, end=1.0)
+        bnl.TimeSpan(start=2.0, end=1.0)
 
-    # Test empty segmentation cases (lines 80, 103, 180)
-    empty_seg = Segmentation()
-    assert empty_seg.itvls.size == 0  # empty array
+    # Test empty segmentation cases
+    empty_seg = bnl.Segmentation()
+    assert empty_seg.itvls.size == 0
     assert empty_seg.bdrys == []
     assert str(empty_seg) == "Segmentation(0 segments): []"
 
-    # Test empty hierarchy cases (line 232)
-    empty_hierarchy = Hierarchy()
+    # Test empty hierarchy cases
+    empty_hierarchy = bnl.Hierarchy()
     assert str(empty_hierarchy) == "Hierarchy(0 levels): []"
 
-    # Test TimeSpan without name (coverage for else branch in __str__ and __repr__)
-    unnamed_span = TimeSpan(start=1.0, end=2.0)
+    # Test TimeSpan without name
+    unnamed_span = bnl.TimeSpan(start=1.0, end=2.0)
     assert "○" in str(unnamed_span)
     assert "○" in repr(unnamed_span)
 

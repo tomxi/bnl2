@@ -25,7 +25,6 @@ Basic Usage
 
     # Access properties
     print(f"Duration: {seg.duration}")
-    print(f"Number of segments: {seg.num_segments}")
 
     # Visualize
     fig, ax = plot_segment(seg, text=True)

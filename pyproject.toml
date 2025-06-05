@@ -12,12 +12,11 @@ license = {text = "MIT"}
 dependencies = [
     "numpy>=1.20",  
     "matplotlib>=3.3",
-    "librosa>=0.11.0",
+    "librosa>=0.10.0",
     "pyarrow>=14.0",
-    "seaborn>=0.13.2",
-    "jams>=0.3.5",
-    "mir_eval>=0.8.2",
-    # Note: jams and mir_eval installed from GitHub via conda environment
+    "seaborn>=0.13.0",
+    "mir_eval>=0.8.0",
+    # Note: jams installed from GitHub via conda environment
 ]
 
 [project.optional-dependencies]

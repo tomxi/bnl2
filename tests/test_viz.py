@@ -34,6 +34,18 @@ class TestLabelStyleDict:
         styles = viz.label_style_dict(["X"], boundary_color="blue")
         assert styles["X"]["edgecolor"] == "blue"
 
+    def test_many_labels_style_generation(self):
+        """Test style generation for more than 80 unique labels to cover the else branch."""
+        # Create more than 80 unique labels
+        num_labels = 81
+        labels = [f"label_{i}" for i in range(num_labels)]
+
+        styles = viz.label_style_dict(labels)
+
+        # Assert that all unique labels have a style generated
+        assert len(styles) == num_labels
+        assert set(styles.keys()) == set(labels)
+
 
 class TestSegmentPlotting:
     def test_basic_plotting(self):

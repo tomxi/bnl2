@@ -34,4 +34,4 @@ Basic Usage
 Next Steps
 ----------
 
-See :doc:`examples` for more detailed usage examples and :doc:`api/bnl` for complete API documentation. 
+See :doc:`examples` for more detailed usage examples and :doc:`../api/bnl` for complete API documentation. 

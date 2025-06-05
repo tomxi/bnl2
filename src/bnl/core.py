@@ -92,36 +92,6 @@ class Segment:
             return np.array([])
         return boundaries_to_intervals(np.array(self.boundaries))
 
-    @classmethod
-    def from_itvls(cls, intervals: np.ndarray, labels: List[str]) -> "Segment":
-        """Create a Segment from interval pairs and labels.
-
-        Parameters
-        ----------
-        intervals : np.ndarray [shape=(n, 2)]
-            Array of interval start and end times.
-            Each row should be [start_time, end_time] in seconds.
-            Start times must be less than or equal to end times.
-        labels : list of str [length=n]
-            Label for each interval in `intervals`.
-            Length must match the number of intervals.
-
-        Returns
-        -------
-        Segment
-            A new Segment instance with boundaries derived from the interval endpoints.
-
-        Raises
-        ------
-        ValueError
-            If any interval has a start time greater than its end time.
-            If the number of labels doesn't match the number of intervals.
-
-        """
-        # Extract unique boundaries as a set
-        boundaries = set(intervals.flatten())
-        return cls(beta=boundaries, labels=labels)
-
     def plot(
         self,
         ax=None,

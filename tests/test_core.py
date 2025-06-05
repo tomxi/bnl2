@@ -46,54 +46,6 @@ def test_segment_properties():
 
 
 @pytest.mark.parametrize(
-    "intervals_input, labels_input, expected_beta, expected_labels, expected_n_segments, expected_duration",
-    [
-        (  # Basic case
-            np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]]),
-            ["A", "B", "C"],
-            {0.0, 1.0, 2.5, 3.0},
-            ["A", "B", "C"],
-            3,
-            3.0,
-        ),
-        (  # Unsorted intervals
-            np.array([[1.0, 2.5], [0.0, 1.0], [2.5, 3.0]]),
-            ["L1", "L2", "L3"],  # Labels for segments from sorted boundaries
-            {0.0, 1.0, 2.5, 3.0},
-            ["L1", "L2", "L3"],
-            3,
-            3.0,
-        ),
-        (  # Overlapping intervals, new boundaries created
-            np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0], [2.0, 2.5]]),
-            ["S1", "S2", "S3", "S4"],  # Labels for 4 new segments
-            {0.0, 1.0, 2.0, 2.5, 3.0},
-            ["S1", "S2", "S3", "S4"],
-            4,
-            3.0,
-        ),
-    ],
-)
-def test_from_itvls(
-    intervals_input,
-    labels_input,
-    expected_beta,
-    expected_labels,
-    expected_n_segments,
-    expected_duration,
-):
-    """Test the from_itvls classmethod with various interval configurations."""
-    seg = Segment.from_itvls(intervals_input, labels_input)
-    assert seg.beta == expected_beta
-    assert seg.labels == expected_labels
-    assert max(0, len(seg.beta) - 1) == expected_n_segments
-    duration = (
-        seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
-    )
-    assert duration == expected_duration
-
-
-@pytest.mark.parametrize(
     "beta_input, expected_beta_set, expected_str, expected_repr",
     [
         (
@@ -150,7 +102,7 @@ def test_beta_input_conversion_to_set(beta_input):
     # This test focuses on beta set conversion.
 
 
-def test_seg_from_itvls_factory_function():
+def test_seg_from_itvls():
     """Test the seg_from_itvls factory function."""
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
     labels = ["A", "B", "C"]
@@ -159,8 +111,3 @@ def test_seg_from_itvls_factory_function():
     seg = seg_from_itvls(intervals, labels)
     assert seg.beta == {0.0, 1.0, 2.5, 3.0}
     assert seg.labels == ["A", "B", "C"]
-
-    # Test it produces same result as classmethod
-    seg_classmethod = Segment.from_itvls(intervals, labels)
-    assert seg.beta == seg_classmethod.beta
-    assert seg.labels == seg_classmethod.labels

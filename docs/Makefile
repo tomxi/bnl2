@@ -13,11 +13,13 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 liveserve: clean
+	@echo "Killing any existing sphinx-autobuild processes..."
+	@pkill -f sphinx-autobuild || true
 	@echo "Building and serving documentation with live reload..."
 	@echo "Watch for changes in: $(SOURCEDIR)"
-	@echo "Access at: http://localhost:8001"
+	@echo "Access at: http://localhost:8002"
 	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" \
-		--port 8001 \
+		--port 8002 \
 		--watch "$(SOURCEDIR)" \
 		--ignore "$(BUILDDIR)" \
 		--delay 1 \

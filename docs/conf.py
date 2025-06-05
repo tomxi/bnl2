@@ -70,7 +70,3 @@ html_theme_options = {
 html_context = {
     'display_github': True,
 }
-
-# Add custom CSS
-def setup(app):
-    app.add_css_file('custom.css')

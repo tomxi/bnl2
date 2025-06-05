@@ -35,14 +35,3 @@ Visualization
     plot_segment(reference, ax=axes[0], text=True, ytick="Reference")
     plot_segment(prediction, ax=axes[1], text=True, ytick="Prediction")
     plt.tight_layout()
-
-Custom Styling
----------------
-
-.. code-block:: python
-
-    from bnl import label_style_dict
-
-    # Custom colors and styles
-    style_map = label_style_dict(song.labels, boundary_color="black", alpha=0.8)
-    fig, ax = plot_segment(song, text=True, style_map=style_map) 

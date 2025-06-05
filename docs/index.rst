@@ -9,9 +9,9 @@ A Python library for hierarchical text segmentation and evaluation.
    This is a work in progress, co-written with LLMs.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Documentation:
 
    pages/quickstart
-   api/bnl
    pages/examples
+   api/bnl

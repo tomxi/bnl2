@@ -21,11 +21,9 @@ class TimeSpan:
 
     Examples
     --------
-    >>> span = TimeSpan(start=1.0, end=3.0, label='chorus')
-    >>> span.duration
+    >>> span = TimeSpan(start=1.0, end=3.0, name='chorus')
+    >>> span.end - span.start  # duration
     2.0
-    >>> span.itvl
-    array([1., 3.])
     """
 
     start: float = 0.0
@@ -37,11 +35,6 @@ class TimeSpan:
             raise ValueError(
                 f"Start time ({self.start}) must be less than end time ({self.end})"
             )
-
-    @property
-    def duration(self) -> float:
-        """Get the duration of the time span."""
-        return self.end - self.start
 
     def __repr__(self) -> str:
         label_str = f", label='{self.name}'" if self.name else "○"
@@ -253,13 +246,15 @@ class Hierarchy(TimeSpan):
         return [lvl.bdrys for lvl in self.layers]
 
     def __repr__(self) -> str:
-        return f"Hierarchy(depth={len(self)}, duration={self.duration:.2f}s)"
+        dur = self.end - self.start if self.layers else 0.0
+        return f"Hierarchy(depth={len(self)}, duration={dur:.2f}s)"
 
     def __str__(self) -> str:
         if len(self) == 0:
             return "Hierarchy(0 levels): []"
 
-        lines = [f"Hierarchy({len(self)} levels, duration={self.duration:.2f}s):"]
+        dur = self.end - self.start if self.layers else 0.0
+        lines = [f"Hierarchy({len(self)} levels, duration={dur:.2f}s):"]
         for i, lvl in enumerate(self.layers):
             lines.append(f"Level {i}: {lvl}")
         return "\n".join(lines)

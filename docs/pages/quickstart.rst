@@ -24,7 +24,7 @@ Basic Usage
     seg = seg_from_brdys(boundaries, labels)
 
     # Access properties
-    print(f"Duration: {seg.duration}")
+    print(f"Duration: {seg.end - seg.start}")
     print(f"Labels: {seg.labels}")
     print(f"Boundaries: {seg.bdrys}")
 

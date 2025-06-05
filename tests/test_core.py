@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from bnl import Segment
+from bnl import Segment, seg_from_itvls
 
 
 def test_basic_segment_creation():
@@ -141,3 +141,19 @@ def test_beta_input_conversion_to_set(beta_input):
     assert seg.beta == {1.0, 2.0, 3.0}
     # number of segments would be 2, labels auto-generated as ["1.000", "2.000"]
     # This test focuses on beta set conversion.
+
+
+def test_seg_from_itvls_factory_function():
+    """Test the seg_from_itvls factory function."""
+    intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
+    labels = ['A', 'B', 'C']
+    
+    # Test factory function creates correct segment
+    seg = seg_from_itvls(intervals, labels)
+    assert seg.beta == {0.0, 1.0, 2.5, 3.0}
+    assert seg.labels == ['A', 'B', 'C']
+    
+    # Test it produces same result as classmethod
+    seg_classmethod = Segment.from_itvls(intervals, labels)
+    assert seg.beta == seg_classmethod.beta
+    assert seg.labels == seg_classmethod.labels

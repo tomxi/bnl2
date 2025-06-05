@@ -1,4 +1,4 @@
-"""Core data structures for text segmentation."""
+"""Core data structures and constructors."""
 
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Set
@@ -167,3 +167,32 @@ class Segment:
             time_ticks=time_ticks,
             style_map=style_map,
         )
+
+
+def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segment:
+    """Create segment from interval array.
+    
+    Parameters
+    ----------
+    intervals : np.ndarray [shape=(n, 2)]
+        Array of interval start and end times.
+        Each row should be [start_time, end_time] in seconds.
+    labels : list of str [length=n]
+        Label for each interval in `intervals`.
+        Length must match the number of intervals.
+        
+    Returns
+    -------
+    Segment
+        A new Segment instance with boundaries derived from the interval endpoints.
+        
+    Examples
+    --------
+    >>> intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
+    >>> labels = ['A', 'B', 'C']
+    >>> seg = seg_from_itvls(intervals, labels)
+    """
+    boundaries = set(intervals.flatten())
+    return Segment(beta=boundaries, labels=labels)
+
+

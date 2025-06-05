@@ -12,7 +12,7 @@ viz
 
 __version__ = "0.1.0"
 
-from .core import Segment
+from .core import Segment, seg_from_itvls
 from . import viz
 
 # Explicitly import viz functions to make them available at package level
@@ -20,6 +20,7 @@ from .viz import plot_segment, label_style_dict
 
 __all__ = [
     "Segment",
+    "seg_from_itvls",
     "viz",
     "plot_segment",
     "label_style_dict",

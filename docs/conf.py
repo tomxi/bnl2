@@ -20,10 +20,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.autosummary',
-    'sphinx.ext.todo',
     'numpydoc',
     'sphinx_copybutton',
     'myst_parser',
@@ -70,13 +68,7 @@ html_theme_options = {
 
 # Custom navigation links
 html_context = {
-    'display_github': False,
-}
-
-# Intersphinx mapping
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
+    'display_github': True,
 }
 
 # Add custom CSS

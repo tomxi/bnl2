@@ -4,27 +4,28 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # -- Project information -----------------------------------------------------
-project = 'BNL'
-copyright = '2025, Tom Xi'
-author = 'Tom Xi'
+project = "BNL"
+copyright = "2025, Tom Xi"
+author = "Tom Xi"
 
 # The full version, including alpha/beta/rc tags
 from bnl import __version__
+
 release = __version__
 
 # -- General configuration ---------------------------------------------------
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.autosummary',
-    'numpydoc',
-    'sphinx_copybutton',
-    'myst_parser',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.autosummary",
+    "numpydoc",
+    "sphinx_copybutton",
+    "myst_parser",
 ]
 
 
@@ -47,26 +48,25 @@ numpydoc_class_members_toctree = False
 
 # Autodoc settings
 autodoc_default_options = {
-    'members': True,
-    'inherited-members': True,
-    'show-inheritance': True,
+    "members": True,
+    "inherited-members": True,
+    "show-inheritance": True,
 }
-autodoc_member_order = 'groupwise'
-autodoc_typehints = 'description'
+autodoc_member_order = "groupwise"
+autodoc_typehints = "description"
 
 # Templates
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    'navigation_depth': 4,
-    'collapse_navigation': False,
+    "navigation_depth": 4,
+    "collapse_navigation": False,
 }
 
 # Custom navigation links
 html_context = {
-    'display_github': True,
+    "display_github": True,
 }

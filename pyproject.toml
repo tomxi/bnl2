@@ -15,6 +15,8 @@ dependencies = [
     "librosa>=0.11.0",
     "pyarrow>=14.0",
     "seaborn>=0.13.2",
+    "jams>=0.3.5",
+    "mir_eval>=0.8.2",
     # Note: jams and mir_eval installed from GitHub via conda environment
 ]
 

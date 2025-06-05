@@ -1,10 +1,5 @@
 {
-    "files.associations": {
-        "*.rst": "restructuredtext"
-    },
     "autoDocstring.docstringFormat": "numpy",
-    "python.formatting.provider": "black",
-    "editor.formatOnSave": true,
     "files.exclude": {
         "**/__pycache__": true,
         "**/*.egg-info": true,

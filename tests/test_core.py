@@ -11,7 +11,9 @@ def test_basic_segment_creation():
     seg = Segment(beta=[0.0, 1.0, 2.5, 4.0], labels=["A", "B", "C"])
     assert seg.beta == {0.0, 1.0, 2.5, 4.0}
     assert seg.labels == ["A", "B", "C"]
-    expected_duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    expected_duration = (
+        seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    )
     assert expected_duration == 4.0
     assert max(0, len(seg.beta) - 1) == 3
 
@@ -20,13 +22,14 @@ def test_basic_segment_creation():
     assert seg.labels == ["0.000", "1.000", "2.500"]
 
 
-
 def test_segment_properties():
     """Test Segment properties and methods."""
     seg = Segment(beta=[0.5, 1.5, 3.0], labels=["A", "B"])
 
     # Test duration
-    expected_duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    expected_duration = (
+        seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    )
     assert expected_duration == 2.5
 
     # Test intervals
@@ -84,7 +87,9 @@ def test_from_itvls(
     assert seg.beta == expected_beta
     assert seg.labels == expected_labels
     assert max(0, len(seg.beta) - 1) == expected_n_segments
-    duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    duration = (
+        seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    )
     assert duration == expected_duration
 
 
@@ -110,7 +115,9 @@ def test_zero_segment_cases(beta_input, expected_beta_set, expected_str, expecte
     seg = Segment(beta=beta_input)
     assert seg.beta == expected_beta_set
     assert seg.labels == []
-    duration = seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    duration = (
+        seg.boundaries[-1] - seg.boundaries[0] if len(seg.boundaries) > 1 else 0.0
+    )
     assert duration == 0.0
     assert max(0, len(seg.beta) - 1) == 0
     assert seg.itvls.size == 0
@@ -146,13 +153,13 @@ def test_beta_input_conversion_to_set(beta_input):
 def test_seg_from_itvls_factory_function():
     """Test the seg_from_itvls factory function."""
     intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
-    labels = ['A', 'B', 'C']
-    
+    labels = ["A", "B", "C"]
+
     # Test factory function creates correct segment
     seg = seg_from_itvls(intervals, labels)
     assert seg.beta == {0.0, 1.0, 2.5, 3.0}
-    assert seg.labels == ['A', 'B', 'C']
-    
+    assert seg.labels == ["A", "B", "C"]
+
     # Test it produces same result as classmethod
     seg_classmethod = Segment.from_itvls(intervals, labels)
     assert seg.beta == seg_classmethod.beta

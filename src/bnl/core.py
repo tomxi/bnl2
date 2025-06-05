@@ -48,10 +48,14 @@ class Segment:
                 f"Number of labels ({len(self.labels)}) must be one less than "
                 f"number of unique boundaries ({len(self.beta)})"
             )
-        
+
     def __repr__(self) -> str:
         n_segments = max(0, len(self.beta) - 1)
-        duration = self.boundaries[-1] - self.boundaries[0] if len(self.boundaries) > 1 else 0.0
+        duration = (
+            self.boundaries[-1] - self.boundaries[0]
+            if len(self.boundaries) > 1
+            else 0.0
+        )
         return f"Segment({n_segments} segments, total_duration={duration:.2f}s)"
 
     def __str__(self) -> str:
@@ -171,7 +175,7 @@ class Segment:
 
 def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segment:
     """Create segment from interval array.
-    
+
     Parameters
     ----------
     intervals : np.ndarray [shape=(n, 2)]
@@ -180,12 +184,12 @@ def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segment:
     labels : list of str [length=n]
         Label for each interval in `intervals`.
         Length must match the number of intervals.
-        
+
     Returns
     -------
     Segment
         A new Segment instance with boundaries derived from the interval endpoints.
-        
+
     Examples
     --------
     >>> intervals = np.array([[0.0, 1.0], [1.0, 2.5], [2.5, 3.0]])
@@ -194,5 +198,3 @@ def seg_from_itvls(intervals: np.ndarray, labels: List[str]) -> Segment:
     """
     boundaries = set(intervals.flatten())
     return Segment(beta=boundaries, labels=labels)
-
-

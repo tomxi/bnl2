@@ -4,19 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bnl"
-version = "0.1.0"
+version = "0.2.0"
 description = "Boundary and Labeling Research Project"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [
     "numpy>=1.20",  
-    "mir_eval>=0.7", 
     "matplotlib>=3.3",
-    "librosa>=0.8.0",
+    "librosa>=0.11.0",
     "pyarrow>=14.0",
-    "jams>=0.3.4",
     "seaborn>=0.13.2",
+    # Note: jams and mir_eval installed from GitHub via conda environment
 ]
 
 [project.optional-dependencies]
@@ -30,11 +29,11 @@ docs = [
 ]
 dev = [
     "pytest>=7.0.0",
-    "black>=22.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
     "isort>=5.0.0",
     "mypy>=0.910",
     "pylint>=2.12.0",
-    "black>=23.0.0",
 ]
 
 [project.urls]

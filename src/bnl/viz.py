@@ -9,9 +9,9 @@ from cycler import cycler
 from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 
 
-# Import Segment for type hinting only to avoid circular dependency
+# Import Segmentation for type hinting only to avoid circular dependency
 if TYPE_CHECKING:
-    from .core import Segment # pragma: no cover
+    from .core import Segmentation # pragma: no cover
 
 
 def label_style_dict(labels, boundary_color="white", **kwargs):
@@ -121,19 +121,19 @@ def _plot_itvl_lbls(
 
 
 def plot_segment(
-    seg: "Segment",
+    seg: "Segmentation",
     ax: Optional[plt.Axes] = None,
     text: bool = False,
     ytick: str = "",
     time_ticks: bool = True,
     style_map: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Tuple[plt.Figure, plt.Axes]:
-    """Plot a Segment object.
+    """Plot a Segmentation object.
 
     Parameters
     ----------
-    seg : bnl.core.Segment
-        The Segment object to plot.
+    seg : bnl.core.Segmentation
+        The Segmentation object to plot.
     ax : matplotlib.axes.Axes, optional
         Axes to plot on. If None, a new figure and axes are created.
     text : bool, default=False
@@ -158,18 +158,18 @@ def plot_segment(
     else:
         fig = ax.figure
 
-    # get extent of the segment
-    t_start = seg.boundaries[0] if seg.boundaries else 0.0
-    t_end = seg.boundaries[-1] if len(seg.boundaries) > 1 else t_start + 1.0
+    # get extent of the segmentation
+    t_start = seg.start
+    t_end = seg.end
 
     # only plot if there are segments
-    if len(seg.boundaries) > 1:
+    if len(seg) > 0:
         _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
     else:
         ax.text(
             0.5,
             0.5,
-            "Empty Segment",
+            "Empty Segmentation",
             ha="center",
             va="center",
             transform=ax.transAxes,

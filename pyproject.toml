@@ -16,7 +16,7 @@ dependencies = [
     "pyarrow>=14.0",
     "seaborn>=0.13.0",
     "mir_eval>=0.8.0",
-    "jams>=0.3.4",
+    "jams @ git+https://github.com/marl/jams.git"
 ]
 
 [project.optional-dependencies]

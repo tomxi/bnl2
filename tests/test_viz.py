@@ -59,24 +59,6 @@ def test_segmentation_plotting():
     assert fig is not None
 
 
-def test_internal_plotting_helper():
-    """Test internal plotting helper function."""
-    fig, ax = plt.subplots()
-    intervals = np.array([[0.0, 1.0], [2.0, 3.0]])
-    labels = ["A", "B"]
-
-    # Basic functionality
-    viz._plot_itvl_lbls(intervals, labels, ax, text=True)
-    assert len(ax.patches) > 0
-    assert len(ax.texts) == 2
-
-    # Custom styling
-    style_map = {"A": {"facecolor": "purple", "alpha": 0.6}}
-    viz._plot_itvl_lbls(intervals[:1], labels[:1], ax, style_map=style_map)
-    patch = ax.patches[-1]  # Last added patch
-    assert patch.get_alpha() == 0.6
-
-
 def test_empty_segmentation_with_title_and_ytick():
     """Test plotting empty segmentation with title and ytick to cover lines 162, 172, 184."""
     # Create empty segmentation with a name

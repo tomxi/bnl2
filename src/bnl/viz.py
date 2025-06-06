@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .core import Segmentation  # pragma: no cover
 
 
-def label_style_dict(labels, boundary_color="white", **kwargs):
+def label_style_dict(labels, **kwargs):
     """
     Creates a mapping of labels to matplotlib style properties.
 
@@ -22,8 +22,6 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
     ----------
     labels : list or ndarray
         List of labels (can be nested). Duplicates are processed once.
-    boundary_color : str, default="white"
-        Color for segment boundaries.
     **kwargs : dict
         Additional style properties to apply to all labels.
 
@@ -67,7 +65,6 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
         # Build final style dictionary
         seg_map[lab] = {
             "linewidth": 1,
-            "edgecolor": boundary_color,
             "label": lab,
             **style,
             **kwargs,
@@ -75,55 +72,10 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
     return seg_map
 
 
-def _plot_itvl_lbls(
-    intervals: np.ndarray,
-    labels: List[str],
-    ax: plt.Axes,
-    text: bool = True,
-    style_map: Optional[Dict[str, Dict[str, Any]]] = None,
-) -> None:
-    """Internal helper to plot intervals and labels on a given Axes.
-
-    Parameters
-    ----------
-    intervals : np.ndarray, shape=(n, 2)
-        Segment intervals [start, end].
-    labels : list of str
-        Segment labels, must be same length as number of intervals.
-    ax : matplotlib.axes.Axes
-        Axes object to plot on.
-    text : bool, default=True
-        Whether to display segment labels as text on the plot.
-    style_map : dict, optional
-        A precomputed mapping from labels to style properties.
-        If None, it will be generated using `label_style_dict`.
-    """
-    ax.set_xlim(intervals[0][0], intervals[-1][-1])
-
-    if style_map is None:
-        style_map = label_style_dict(labels)
-    transform = ax.get_xaxis_transform()
-
-    for ival, lab in zip(intervals, labels):
-        rect = ax.axvspan(ival[0], ival[1], ymin=0, ymax=1, **style_map[lab])
-        if text:
-            ann = ax.annotate(
-                lab,
-                xy=(ival[0], 1),
-                xycoords=transform,
-                xytext=(8, -10),
-                textcoords="offset points",
-                va="top",
-                clip_on=True,
-                bbox=dict(boxstyle="round", facecolor="white"),
-            )
-            ann.set_clip_path(rect)
-
-
 def plot_segment(
     seg: "Segmentation",
     ax: Optional[plt.Axes] = None,
-    text: bool = True,
+    label_text: bool = True,
     title: bool = True,
     ytick: str = "",
     time_ticks: bool = True,
@@ -137,7 +89,7 @@ def plot_segment(
         The Segmentation object to plot.
     ax : matplotlib.axes.Axes, optional
         Axes to plot on. If None, a new figure and axes are created.
-    text : bool, default=True
+    label_text : bool, default=True
         Whether to display segment labels as text on the plot.
     title : bool, default=True
         Whether to display a title on the axis.
@@ -161,13 +113,22 @@ def plot_segment(
     else:
         fig = ax.figure
 
-    # get extent of the segmentation
-    t_start = seg.start
-    t_end = seg.end
-
     # only plot if there are segments
     if len(seg) > 0:
-        _plot_itvl_lbls(seg.itvls, seg.labels, ax, text=text, style_map=style_map)
+        # Generate style map if not provided
+        if style_map is None:
+            style_map = label_style_dict(seg.labels)
+
+        # Use TimeSpan.plot() for each segment, but manage the axis ourselves
+        ax.set_xlim(seg.start, seg.end)
+
+        # Plot each segment using its TimeSpan.plot() method
+        for segment in seg.segments:
+            # Get style for this segment's label
+            segment_style = style_map[segment.name]
+            # What if name is None? We want a unique style for these None labels... what's the best way to handle this? #TODO
+            # Plot the segment using TimeSpan interface
+            segment.plot(ax=ax, text=label_text, **segment_style)
     else:
         ax.text(
             0.5,
@@ -182,7 +143,7 @@ def plot_segment(
 
     if title and seg.name:
         ax.set_title(seg.name)
-    ax.set_xlim(t_start, t_end)
+    ax.set_xlim(seg.start, seg.end)
     ax.set_ylim(0, 1)
 
     if time_ticks:

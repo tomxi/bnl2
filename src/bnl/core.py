@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set, Tuple
 import numpy as np
 from mir_eval.util import boundaries_to_intervals
+import jams
+import matplotlib.pyplot as plt
 
 __all__ = ["TimeSpan", "Segmentation", "Hierarchy"]
 
@@ -18,7 +20,7 @@ class TimeSpan:
         Start time in seconds.
     end : float
         End time in seconds.
-    label : str, optional
+    name : str, optional
         Label for this time span.
 
     Examples
@@ -46,6 +48,41 @@ class TimeSpan:
         label_str = f" ({self.name})" if self.name else "○"
         return f"[{self.start:.2f}-{self.end:.2f}s]{label_str}"
 
+    def plot(
+        self,
+        ax: Optional[plt.Axes] = None,
+        text: bool = True,
+        edgecolor: str = "white",
+        **style_map,
+    ):
+        """Plot the time span as axvspan on the given axis.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            Axes to plot on. If None, a new figure and axes are created.
+        style_map : dict, optional
+            A dictionary of style properties for the axvspan.
+        """
+        if ax is None:
+            _, ax = plt.subplots()
+
+        rect = ax.axvspan(self.start, self.end, edgecolor=edgecolor, **style_map)
+        if text:
+            ann = ax.annotate(
+                self.name,
+                xy=(self.start, 1),
+                xycoords=ax.get_xaxis_transform(),
+                xytext=(8, -10),
+                textcoords="offset points",
+                va="top",
+                clip_on=True,
+                bbox=dict(boxstyle="round", facecolor="white"),
+            )
+            ann.set_clip_path(rect)
+
+        return ax.figure, ax
+
 
 @dataclass
 class Segmentation(TimeSpan):
@@ -72,8 +109,8 @@ class Segmentation(TimeSpan):
 
         # Set start/end from segments if available
         if self.segments:
-            object.__setattr__(self, "start", self.segments[0].start)
-            object.__setattr__(self, "end", self.segments[-1].end)
+            self.start = self.segments[0].start
+            self.end = self.segments[-1].end
 
     def __len__(self) -> int:
         return len(self.segments)
@@ -191,26 +228,43 @@ class Segmentation(TimeSpan):
             return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
 
     @classmethod
-    def from_intervals(cls, intervals: np.ndarray, labels: List[str]) -> "Segmentation":
+    def from_intervals(
+        cls,
+        intervals: np.ndarray,
+        labels: Optional[List[str]] = None,
+        name: Optional[str] = None,
+    ) -> "Segmentation":
         """Create segmentation from an interval array."""
+        # Default labels is the interval string
+        if labels is None:
+            labels = [f"{s:.1f}-{e:.1f}" for s, e in intervals]
+
         time_spans = [
-            TimeSpan(start=interval[0], end=interval[1], name=label)
-            for interval, label in zip(intervals, labels)
+            TimeSpan(start=itvl[0], end=itvl[1], name=label)
+            for itvl, label in zip(intervals, labels)
         ]
-        return cls(segments=time_spans)
+        return cls(segments=time_spans, name=name)
 
     @classmethod
-    def from_boundaries(cls, boundaries, labels: List[str]) -> "Segmentation":
+    def from_boundaries(
+        cls,
+        boundaries: List[float],
+        labels: Optional[List[str]] = None,
+        name: Optional[str] = None,
+    ) -> "Segmentation":
         """Create segmentation from a list of boundaries."""
         intervals = boundaries_to_intervals(np.array(sorted(boundaries)))
+        if labels is None:
+            labels = [f"{s:.1f}-{e:.1f}" for s, e in intervals]
+
         time_spans = [
             TimeSpan(start=interval[0], end=interval[1], name=label)
             for interval, label in zip(intervals, labels)
         ]
-        return cls(segments=time_spans)
+        return cls(segments=time_spans, name=name)
 
     @classmethod
-    def from_jams(cls, anno) -> "Segmentation":
+    def from_jams(cls, anno: jams.Annotation) -> "Segmentation":
         """Create segmentation from a JAMS annotation. (Not yet implemented)"""
         # TODO: Implement JAMS open_segment annotation parsing
         pass

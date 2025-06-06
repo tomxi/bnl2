@@ -39,13 +39,15 @@ class TimeSpan:
             raise ValueError(
                 f"Start time ({self.start}) must be less than end time ({self.end})"
             )
-
-    def __repr__(self) -> str:
-        return f"TimeSpan({self})"
+        if self.name is None:
+            self.name = str(self)
 
     def __str__(self) -> str:
         lab = self.name if self.name else ""
         return f"[{self.start:.1f}-{self.end:.1f}s]{lab}"
+
+    def __repr__(self) -> str:
+        return f"TimeSpan({self})"
 
     def plot(
         self,
@@ -77,7 +79,7 @@ class TimeSpan:
         # Get ymax for annotation positioning, default to 1 (top of axes)
         span_ymax = style_map.get("ymax", 1.0)  # get the top of the rect span
         if text:
-            lab = self.name if self.name else str(self)
+            lab = str(self) if self.name == "" else self.name
             ann = ax.annotate(
                 lab,
                 xy=(self.start, span_ymax),
@@ -115,6 +117,10 @@ class Segmentation(TimeSpan):
     def __post_init__(self):
         # order the segments by start time
         self.segments = sorted(self.segments, key=lambda x: x.start)
+        # I should check that the segments are non-overlapping and contiguous.
+        for i in range(len(self.segments) - 1):
+            if self.segments[i].end != self.segments[i + 1].start:
+                raise ValueError("Segments must be non-overlapping and contiguous.")
 
         # Set start/end from segments if available
         if self.segments:
@@ -168,7 +174,7 @@ class Segmentation(TimeSpan):
 
     def __repr__(self) -> str:
         dur = self.end - self.start
-        return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
+        return f"Segmentation({len(self)} segments over {dur:.2f}s)"
 
     def plot(
         self,
@@ -227,14 +233,8 @@ class Segmentation(TimeSpan):
         if len(self) == 0:
             return "Segmentation(0 segments): []"
 
-        if len(self) == 1:
-            # For single segments, use compact format
-            dur = self.end - self.start
-            return f"Segmentation({len(self)} segments, duration={dur:.2f}s): {self.segments[0]}"
-        else:
-            # For multiple segments, use repr-style format
-            dur = self.end - self.start
-            return f"Segmentation({len(self)} segments, duration={dur:.2f}s)"
+        dur = self.end - self.start
+        return f"Segmentation({len(self)} segments over {dur:.2f}s)"
 
     @classmethod
     def from_intervals(
@@ -246,7 +246,7 @@ class Segmentation(TimeSpan):
         """Create segmentation from an interval array."""
         # Default labels is the interval string
         if labels is None:
-            labels = [f"{s:.1f}-{e:.1f}" for s, e in intervals]
+            labels = [None] * len(intervals)
 
         time_spans = [
             TimeSpan(start=itvl[0], end=itvl[1], name=label)
@@ -263,14 +263,7 @@ class Segmentation(TimeSpan):
     ) -> "Segmentation":
         """Create segmentation from a list of boundaries."""
         intervals = boundaries_to_intervals(np.array(sorted(boundaries)))
-        if labels is None:
-            labels = [f"{s:.1f}-{e:.1f}" for s, e in intervals]
-
-        time_spans = [
-            TimeSpan(start=interval[0], end=interval[1], name=label)
-            for interval, label in zip(intervals, labels)
-        ]
-        return cls(segments=time_spans, name=name)
+        return cls.from_intervals(intervals, labels, name)
 
     @classmethod
     def from_jams(cls, anno: jams.Annotation) -> "Segmentation":
@@ -296,13 +289,14 @@ class Hierarchy(TimeSpan):
     layers: List[Segmentation] = field(default_factory=list)
 
     def __post_init__(self):
-        # order the layers by start time
-        self.layers = sorted(self.layers, key=lambda x: x.start)
-
         # Set start/end from layers if available
         if self.layers:
-            object.__setattr__(self, "start", self.layers[0].start)
-            object.__setattr__(self, "end", self.layers[0].end)
+            self.start = self.layers[0].start
+            self.end = self.layers[0].end
+
+        for layer in self.layers:
+            if layer.start != self.start or layer.end != self.end:
+                raise ValueError("All layers must have the same start and end time.")
 
     def __len__(self) -> int:
         return len(self.layers)
@@ -344,19 +338,17 @@ class Hierarchy(TimeSpan):
         return [lvl.bdrys for lvl in self.layers]
 
     def __repr__(self) -> str:
-        dur = self.end - self.start if self.layers else 0.0
-        return f"Hierarchy(depth={len(self)}, duration={dur:.2f}s)"
+        return f"Hierarchy({len(self)} levels over {self.start:.2f}s-{self.end:.2f}s)"
 
     def __str__(self) -> str:
         if len(self) == 0:
-            return "Hierarchy(0 levels): []"
+            return "Hierarchy(0 levels)"
 
-        dur = self.end - self.start if self.layers else 0.0
-        return f"Hierarchy({len(self)} levels, duration={dur:.2f}s)"
+        return f"Hierarchy({len(self)} levels over {self.start:.2f}s-{self.end:.2f}s)"
 
     def plot(self, **kwargs):
         """Plots the hierarchy. (Not yet implemented)"""
-        pass
+        pass  # TODO: Implement this
 
     @classmethod
     def from_jams(cls, anno) -> "Hierarchy":

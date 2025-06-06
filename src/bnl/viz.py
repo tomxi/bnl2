@@ -34,7 +34,9 @@ def label_style_dict(labels, boundary_color="white", **kwargs):
         'edgecolor', 'linewidth', 'hatch', and 'label'.
     """
     # Extract unique labels from potentially nested structure
-    unique_labels = np.unique(np.concatenate([np.atleast_1d(l) for l in labels]))
+    unique_labels = np.unique(
+        np.concatenate([np.atleast_1d(l) for l in labels if l is not None])
+    )
 
     # More hatch patterns for more labels
     hatchs = ["", "..", "O.", "*", "xx", "xxO", "\\O", "oo", "\\"]
@@ -122,16 +124,10 @@ def plot_segment(
         if style_map is None:
             style_map = label_style_dict(seg.labels)
 
-        # Use TimeSpan.plot() for each segment, but manage the axis ourselves
         ax.set_xlim(seg.start, seg.end)
-
-        # Plot each segment using its TimeSpan.plot() method
-        for segment in seg.segments:
-            # Get style for this segment's label
-            segment_style = style_map[segment.name]
-            # What if name is None? We want a unique style for these None labels... what's the best way to handle this? #TODO
+        for span in seg.segments:
             # Plot the segment using TimeSpan interface
-            segment.plot(ax=ax, text=label_text, **segment_style)
+            span.plot(ax=ax, text=label_text, **style_map[span.name])
     else:
         ax.text(
             0.5,

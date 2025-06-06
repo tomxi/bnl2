@@ -41,18 +41,16 @@ class TimeSpan:
             )
 
     def __repr__(self) -> str:
-        label_str = f", label='{self.name}'" if self.name else "○"
-        return f"TimeSpan([{self.start:.2f}, {self.end:.2f}], {label_str})"
+        return f"TimeSpan({self})"
 
     def __str__(self) -> str:
-        label_str = f" ({self.name})" if self.name else "○"
-        return f"[{self.start:.2f}-{self.end:.2f}s]{label_str}"
+        lab = self.name if self.name else ""
+        return f"[{self.start:.1f}-{self.end:.1f}s]{lab}"
 
     def plot(
         self,
         ax: Optional[plt.Axes] = None,
         text: bool = True,
-        edgecolor: str = "white",
         **style_map,
     ):
         """Plot the time span as axvspan on the given axis.
@@ -61,17 +59,28 @@ class TimeSpan:
         ----------
         ax : matplotlib.axes.Axes, optional
             Axes to plot on. If None, a new figure and axes are created.
+        text : bool, default=True
+            Whether to display the annotation text.
         style_map : dict, optional
             A dictionary of style properties for the axvspan.
         """
         if ax is None:
             _, ax = plt.subplots()
 
-        rect = ax.axvspan(self.start, self.end, edgecolor=edgecolor, **style_map)
+        # Convert color to facecolor to preserve edgecolor, default edgecolor to white
+        if "color" in style_map:
+            style_map["facecolor"] = style_map.pop("color")
+        style_map.setdefault("edgecolor", "white")
+
+        rect = ax.axvspan(self.start, self.end, **style_map)
+
+        # Get ymax for annotation positioning, default to 1 (top of axes)
+        span_ymax = style_map.get("ymax", 1.0)  # get the top of the rect span
         if text:
+            lab = self.name if self.name else str(self)
             ann = ax.annotate(
-                self.name,
-                xy=(self.start, 1),
+                lab,
+                xy=(self.start, span_ymax),
                 xycoords=ax.get_xaxis_transform(),
                 xytext=(8, -10),
                 textcoords="offset points",
@@ -207,7 +216,7 @@ class Segmentation(TimeSpan):
         return plot_segment(
             self,
             ax=ax,
-            text=text,
+            label_text=text,
             title=title,
             ytick=ytick,
             time_ticks=time_ticks,

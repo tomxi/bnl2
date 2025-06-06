@@ -2,7 +2,9 @@
 
 import pytest
 from pathlib import Path
-
+import tempfile
+from bnl.data.salami import find_audio_file, list_tids
+from bnl.data.base import DatasetConfig, set_config, get_config
 import bnl.data as data
 
 
@@ -107,9 +109,6 @@ def test_salami_edge_cases():
     assert tracks == []  # Should return empty list after catching error
 
     # Test find_audio_file with non-existent track_id to cover line 26
-    from bnl.data.salami import find_audio_file
-    from pathlib import Path
-
     fake_dir = Path("/non/existent/directory")
     result = find_audio_file("nonexistent", fake_dir)
     assert result is None
@@ -117,10 +116,6 @@ def test_salami_edge_cases():
 
 def test_dataset_config_and_missing_paths():
     """Test custom dataset config and handling of missing files/directories."""
-    from bnl.data.base import DatasetConfig, set_config, get_config
-    from bnl.data.salami import find_audio_file, list_tids
-    from pathlib import Path
-
     original_config = get_config()
 
     # Create config with custom non-existent paths (covers path conversion lines)
@@ -152,3 +147,14 @@ def test_dataset_config_and_missing_paths():
 
     # Restore original config
     set_config(original_config)
+
+
+def test_find_audio_file_branches():
+    """Test find_audio_file branches."""
+    with tempfile.TemporaryDirectory() as tmp:
+        p = Path(tmp)
+        assert find_audio_file("x", p) is None  # no dir
+        (p / "y").mkdir()
+        assert find_audio_file("y", p) is None  # no audio
+        (p / "y" / "audio.mp3").touch()
+        assert find_audio_file("y", p) is not None  # has audio

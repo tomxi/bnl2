@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .core import Segmentation  # pragma: no cover
 
 
-def label_style_dict(labels, **kwargs):
+def label_style_dict(labels, boundary_color="white", **kwargs):
     """
     Creates a mapping of labels to matplotlib style properties.
 
@@ -22,6 +22,8 @@ def label_style_dict(labels, **kwargs):
     ----------
     labels : list or ndarray
         List of labels (can be nested). Duplicates are processed once.
+    boundary_color : str, default="white"
+        Color for segment boundaries (edgecolor).
     **kwargs : dict
         Additional style properties to apply to all labels.
 
@@ -65,6 +67,7 @@ def label_style_dict(labels, **kwargs):
         # Build final style dictionary
         seg_map[lab] = {
             "linewidth": 1,
+            "edgecolor": boundary_color,
             "label": lab,
             **style,
             **kwargs,

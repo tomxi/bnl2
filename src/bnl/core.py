@@ -76,13 +76,19 @@ class TimeSpan:
 
         rect = ax.axvspan(self.start, self.end, **style_map)
 
-        # Get ymax for annotation positioning, default to 1 (top of axes)
+        # Get ymin/ymax for annotation positioning, default to 0/1 (bottom/top of axes)
+        span_ymin = style_map.get("ymin", 0.0)  # get the bottom of the rect span
         span_ymax = style_map.get("ymax", 1.0)  # get the top of the rect span
+
+        # Override ymin/ymax for axvspan if present in style_map
+        axvspan_kwargs = {k: v for k, v in style_map.items() if k not in ["ymin", "ymax"]}
+        rect = ax.axvspan(self.start, self.end, ymin=span_ymin, ymax=span_ymax, **axvspan_kwargs)
+
         if text:
             lab = str(self) if self.name == "" else self.name
             ann = ax.annotate(
                 lab,
-                xy=(self.start, span_ymax),
+                xy=(self.start, span_ymax),  # Position text relative to the top of the span
                 xycoords=ax.get_xaxis_transform(),
                 xytext=(8, -10),
                 textcoords="offset points",
@@ -346,9 +352,96 @@ class Hierarchy(TimeSpan):
 
         return f"Hierarchy({len(self)} levels over {self.start:.2f}s-{self.end:.2f}s)"
 
-    def plot(self, **kwargs):
-        """Plots the hierarchy. (Not yet implemented)"""
-        pass  # TODO: Implement this
+    def plot(
+        self,
+        ax: Optional[plt.Axes] = None,
+        label_text: bool = True,
+        style_map: Optional[Dict[str, Any]] = None,
+    ):
+        """Plots the hierarchy.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            Axes to plot on. If None, a new figure and axes are created.
+        label_text : bool, default=True
+            Whether to display segment labels as text on the plot.
+        style_map : dict, optional
+            A precomputed mapping from labels to style properties for all layers.
+            If None, it will be generated using `bnl.viz.label_style_dict`.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The figure object containing the plot.
+        ax : matplotlib.axes.Axes
+            The axes object with the plot.
+        """
+        from .viz import label_style_dict  # Moved import here
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.figure
+
+        if not self.layers:
+            return fig, ax
+
+        num_layers = len(self.layers)
+        layer_height = 1.0 / num_layers
+
+        # Generate a single style_map for all labels across all layers
+        if style_map is None:
+            all_labels = set()
+            for layer in self.layers:
+                for segment in layer.segments:
+                    if segment.name:
+                        all_labels.add(segment.name)
+            style_map = label_style_dict(list(all_labels))
+
+        y_tick_positions = []
+        y_tick_labels = []
+
+        for i, layer in enumerate(self.layers):
+            ymin = 1.0 - (i + 1) * layer_height
+            ymax = 1.0 - i * layer_height
+            y_tick_positions.append(1.0 - (i + 0.5) * layer_height)
+            y_tick_labels.append(layer.name if layer.name else f"Layer {i}")
+
+            # Create a layer-specific style_map that includes ymin and ymax for each segment
+            layer_style_map = {}
+            for segment in layer.segments:
+                seg_style = style_map.get(segment.name, {}).copy()
+                seg_style["ymin"] = ymin
+                seg_style["ymax"] = ymax
+                layer_style_map[segment.name] = seg_style
+
+            # For segments not in the global style_map (e.g. if style_map was provided by user)
+            # still pass ymin/ymax. This logic might need refinement if segments can have no name
+            # or if the provided style_map is not per-label but per-segment.
+            # For now, we assume style_map is keyed by segment names.
+            # A more robust approach might be to pass ymin/ymax directly to layer.plot()
+            # if that method could forward it to individual TimeSpan.plot() calls.
+            # However, Segmentation.plot calls viz.plot_segment, which calls TimeSpan.plot.
+            # The current structure requires passing ymin/ymax via style_map to TimeSpan.plot.
+
+            layer.plot(
+                ax=ax,
+                text=label_text,
+                title=False,  # Disable title for individual layers
+                time_ticks=(i == num_layers - 1),  # Enable time_ticks only for the last layer
+                style_map=layer_style_map,
+                ytick="", # Disable ytick for individual layers, handled by Hierarchy plot
+            )
+
+        ax.set_yticks(y_tick_positions)
+        ax.set_yticklabels(y_tick_labels)
+        ax.set_ylim(0, 1)
+
+        if self.name: # Add a title for the whole hierarchy if it has a name
+            ax.set_title(self.name)
+
+        return fig, ax
 
     @classmethod
     def from_jams(cls, anno) -> "Hierarchy":

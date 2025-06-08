@@ -33,7 +33,9 @@ pip install -e ".[dev,docs]"
 ## Features
 
 - **Core**: Hierarchical text segmentation with `Segment` class
-- **Visualization**: Rich plotting with customizable styling  
+- **Visualization**: Rich plotting with customizable styling
+- **Hierarchical Plotting**: The `Hierarchy` class now supports a `plot()` method to visualize multiple layers of segmentation. Each layer is displayed in its own vertical region, with layer names as y-axis ticks:
+  ![Sample Hierarchy Plot](docs/images/hierarchy_plot_example.png)
 - **Integration**: Compatible with mir_eval and MIR tools
 
 ## License
